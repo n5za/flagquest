@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState } f
 import { storageGet, storageSet } from '../lib/storage.js';
 import { sound } from '../lib/sound.js';
 import { xpForAnswer, levelFromXp, todayKey, yesterdayKey } from '../lib/gameMath.js';
+import { syncXpRun } from '../lib/supabase.js';
 import { CHALLENGE_BONUS } from '../data/modes.js';
 import { BADGE_MAP } from '../data/badges.js';
 import { CONTINENTS } from '../data/continents.js';
@@ -195,6 +196,7 @@ export function GameProvider({ countries, children }) {
         unlockBadge('perfect-round');
       }
       if (mode === 'timed' && correct >= 20) unlockBadge('speed-demon');
+      syncXpRun({ mode, score, correct, total, detail, xp });
     },
     [addSession, unlockBadge]
   );
