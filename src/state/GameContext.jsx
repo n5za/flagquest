@@ -45,7 +45,7 @@ export function GameProvider({ countries, children }) {
     document.documentElement.dataset.theme = settings.theme;
   }, [settings.theme]);
 
-  const pushToast = useCallback((message, icon = '🎉') => {
+  const pushToast = useCallback((message, icon = 'party') => {
     const id = Date.now() + Math.random();
     setToasts((t) => [...t, { id, message, icon }]);
     setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 3500);
@@ -57,7 +57,7 @@ export function GameProvider({ countries, children }) {
       if (progressRef.current.badges.includes(id)) return false;
       setProgress((p) => ({ ...p, badges: [...p.badges, id] }));
       sound.badge();
-      pushToast(`${BADGE_MAP[id].icon} Badge unlocked: ${BADGE_MAP[id].name}`, BADGE_MAP[id].icon);
+      pushToast(`Badge unlocked: ${BADGE_MAP[id].name}`, BADGE_MAP[id].icon);
       return true;
     },
     [pushToast]
@@ -114,8 +114,8 @@ export function GameProvider({ countries, children }) {
   useEffect(() => {
     const r = ensureDaily();
     if (r.changed) {
-      if (r.consumed) pushToast('Streak saved by a freeze!', '❄️');
-      else pushToast(`${r.streak}-day streak!`, '🔥');
+      if (r.consumed) pushToast('Streak saved by a freeze!', 'snowflake');
+      else pushToast(`${r.streak}-day streak!`, 'flame');
     }
     const onVis = () => {
       if (document.visibilityState === 'visible') ensureDaily();

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useGame } from '../state/GameContext.jsx';
 import ConfirmModal from './ConfirmModal.jsx';
 import { UNLOCK_MASTERY } from '../data/continents.js';
+import Icon from './Icon.jsx';
 
 function Toggle({ checked, onChange, label, hint }) {
   return (
@@ -30,7 +31,7 @@ export default function SettingsScreen({ go }) {
   return (
     <div>
       <button className="back-btn" onClick={() => go('home')} aria-label="Back to home">
-        ←
+        <Icon name="arrowLeft" size={20} />
       </button>
       <h1 className="page-title">Settings</h1>
 
@@ -38,19 +39,19 @@ export default function SettingsScreen({ go }) {
         <Toggle
           checked={settings.sound}
           onChange={(v) => setSetting('sound', v)}
-          label="🔊 Sound effects"
+          label={<><Icon name="volume2" size={16} /> Sound effects</>}
           hint="Chimes, buzzes and level-up fanfares"
         />
         <Toggle
           checked={settings.theme === 'light'}
           onChange={(v) => setSetting('theme', v ? 'light' : 'dark')}
-          label="☀️ Light theme"
+          label={<><Icon name="sun" size={16} /> Light theme</>}
           hint="Bright theme for daytime flag hunting"
         />
         <Toggle
           checked={settings.pathMode}
           onChange={(v) => setSetting('pathMode', v)}
-          label="🗺️ Path mode"
+          label={<><Icon name="map" size={16} /> Path mode</>}
           hint={`Continents unlock progressively at ${Math.round(UNLOCK_MASTERY * 100)}% mastery. Off = free mode (everything unlocked)`}
         />
       </div>
@@ -59,7 +60,7 @@ export default function SettingsScreen({ go }) {
       <div className="card settings-card">
         <div className="settings-row">
           <div>
-            <div className="settings-label">🗑 Leaderboard</div>
+            <div className="settings-label"><Icon name="trash" size={16} /> Leaderboard</div>
             <div className="settings-hint dim">Clear all saved sessions</div>
           </div>
           <button className="btn btn-small btn-red" onClick={() => setConfirmLb(true)}>
@@ -68,7 +69,7 @@ export default function SettingsScreen({ go }) {
         </div>
         <div className="settings-row">
           <div>
-            <div className="settings-label">⚠️ Reset progress</div>
+            <div className="settings-label"><Icon name="alert" size={16} /> Reset progress</div>
             <div className="settings-hint dim">Erases XP, level, streaks, badges and mastery</div>
           </div>
           <button className="btn btn-small btn-red" onClick={() => setConfirmReset(true)}>

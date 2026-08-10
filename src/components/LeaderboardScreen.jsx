@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { useGame } from '../state/GameContext.jsx';
 import { MODES } from '../data/modes.js';
 import ConfirmModal from './ConfirmModal.jsx';
+import Icon from './Icon.jsx';
+
+const MEDAL_COLORS = ['#ffc800', '#c9ccd4', '#cd7f32'];
 
 function fmtDate(iso) {
   try {
@@ -25,7 +28,7 @@ export default function LeaderboardScreen({ go }) {
   return (
     <div>
       <button className="back-btn" onClick={() => go('home')} aria-label="Back to home">
-        ←
+        <Icon name="arrowLeft" size={20} />
       </button>
       <h1 className="page-title">Leaderboard</h1>
       <p className="dim">Top 5 sessions per mode, stored on this device.</p>
@@ -39,7 +42,7 @@ export default function LeaderboardScreen({ go }) {
             className={`lb-tab ${tab === key ? 'active' : ''}`}
             onClick={() => setTab(key)}
           >
-            {m.icon} {m.title}
+            <Icon name={m.icon} size={15} /> {m.title}
           </button>
         ))}
       </div>
@@ -53,7 +56,13 @@ export default function LeaderboardScreen({ go }) {
         <div className="lb-list">
           {sessions.map((s, i) => (
             <div key={`${s.date}-${i}`} className={`card lb-row ${i === 0 ? 'top' : ''}`}>
-              <span className="lb-rank">{i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i + 1}`}</span>
+              <span className="lb-rank">
+                {i < 3 ? (
+                  <Icon name="medal" size={22} style={{ color: MEDAL_COLORS[i] }} />
+                ) : (
+                  `#${i + 1}`
+                )}
+              </span>
               <div className="lb-main">
                 <span className="lb-score">{s.score}</span>
                 <span className="lb-detail dim">{s.detail}</span>
@@ -66,7 +75,7 @@ export default function LeaderboardScreen({ go }) {
 
       {sessions.length > 0 && (
         <button className="btn btn-ghost danger-text" onClick={() => setConfirming(true)}>
-          🗑 Clear leaderboard
+          <Icon name="trash" size={16} /> Clear leaderboard
         </button>
       )}
 

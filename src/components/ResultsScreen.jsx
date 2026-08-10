@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useGame } from '../state/GameContext.jsx';
 import Ring from './Ring.jsx';
 import Mascot from './Mascot.jsx';
+import Icon from './Icon.jsx';
 import { burst } from '../lib/confetti.js';
 
 export default function ResultsScreen({ params, go }) {
@@ -25,7 +26,9 @@ export default function ResultsScreen({ params, go }) {
         <p className="dim">{params.title}{params.scope?.type === 'continent' ? ` · ${params.scope.id}` : ''}</p>
         <Ring pct={acc} color={color} size={130} />
         {params.isNewBest && params.score > 0 && (
-          <span className="tag tag-new-best">🏆 New best!</span>
+          <span className="tag tag-new-best">
+            <Icon name="trophy" size={13} /> New best!
+          </span>
         )}
       </section>
 
@@ -39,7 +42,7 @@ export default function ResultsScreen({ params, go }) {
           <span className="stat-label dim">Earned</span>
         </div>
         <div className="card stat">
-          <span className="stat-num">🔥 {params.bestStreak}</span>
+          <span className="stat-num"><Icon name="flame" size={17} /> {params.bestStreak}</span>
           <span className="stat-label dim">Best streak</span>
         </div>
         {params.isTimed && (
@@ -53,18 +56,18 @@ export default function ResultsScreen({ params, go }) {
       <section className="results-actions">
         {params.isChallenge ? (
           <button className="btn btn-ghost" disabled>
-            📅 Come back tomorrow
+            <Icon name="calendar" size={18} /> Come back tomorrow
           </button>
         ) : (
           <button
             className="btn btn-green"
             onClick={() => go('quiz', { mode: params.mode, scope: params.scope })}
           >
-            ▶ Play again
+            <Icon name="play" size={17} /> Play again
           </button>
         )}
         <button className="btn btn-ghost" onClick={() => go('home')}>
-          🏠 Home
+          <Icon name="home" size={18} /> Home
         </button>
       </section>
 

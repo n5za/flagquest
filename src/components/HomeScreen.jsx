@@ -3,6 +3,7 @@ import { MODES, CHALLENGE_BONUS } from '../data/modes.js';
 import { CONTINENTS, UNLOCK_MASTERY } from '../data/continents.js';
 import { levelFromXp, todayKey } from '../lib/gameMath.js';
 import Mascot from './Mascot.jsx';
+import Icon from './Icon.jsx';
 
 function scopeFor(mode) {
   return { type: 'free' };
@@ -41,7 +42,9 @@ export default function HomeScreen({ countries, go }) {
             !challengeDone && go('quiz', { mode: 'challenge', scope: { type: 'challenge' } })
           }
         >
-          <span className="challenge-emoji">📅</span>
+          <span className="challenge-emoji">
+            <Icon name="calendar" size={26} />
+          </span>
           <span className="challenge-main">
             <span className="challenge-title">
               Daily Challenge
@@ -53,7 +56,9 @@ export default function HomeScreen({ countries, go }) {
                 : '10 questions · same for everyone · one shot per day'}
             </span>
           </span>
-          <span className="challenge-cta">{challengeDone ? '✓ Done' : 'Play →'}</span>
+          <span className="challenge-cta">
+            {challengeDone ? <><Icon name="check" size={14} /> Done</> : <><Icon name="play" size={14} /> Play</>}
+          </span>
         </button>
       </section>
 
@@ -71,10 +76,12 @@ export default function HomeScreen({ countries, go }) {
                 style={{ ['--mode-color']: m.color }}
                 onClick={() => go('quiz', { mode: key, scope: scopeFor(key) })}
               >
-                <span className="mode-icon">{m.icon}</span>
+                <span className="mode-icon">
+                  <Icon name={m.icon} size={32} />
+                </span>
                 <span className="mode-name">{m.title}</span>
                 <span className="mode-desc">{m.desc}</span>
-                {best && <span className="mode-best">🏆 {best.score}</span>}
+                {best && <span className="mode-best"><Icon name="trophy" size={13} /> {best.score}</span>}
               </button>
             );
           })}
@@ -99,7 +106,7 @@ export default function HomeScreen({ countries, go }) {
                 onClick={() => !locked && go('path', { continentId: cont.id })}
               >
                 <div className="path-emoji" style={{ background: `${cont.color}22` }}>
-                  {locked ? '🔒' : cont.emoji}
+                  {locked ? <Icon name="lock" size={22} /> : <Icon name={cont.icon} size={26} />}
                 </div>
                 <div className="path-info">
                   <span className="path-name">{cont.id}</span>

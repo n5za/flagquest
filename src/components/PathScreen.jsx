@@ -1,6 +1,7 @@
 import { useGame } from '../state/GameContext.jsx';
 import { CONTINENT_MAP } from '../data/continents.js';
 import { MATCH_PAIRS } from '../data/modes.js';
+import Icon from './Icon.jsx';
 
 const STATE_CHIP = {
   new: { label: 'Not started', cls: 'chip-new' },
@@ -19,13 +20,13 @@ export default function PathScreen({ countries, continentId, go }) {
 
   return (
     <div>
-      <button className="back-btn" onClick={() => go('home')} aria-label="Back to home">
-        ←
-      </button>
+        <button className="back-btn" onClick={() => go('home')} aria-label="Back to home">
+          <Icon name="arrowLeft" size={20} />
+        </button>
       <section className="hero card" style={{ borderTop: `6px solid ${continent.color}` }}>
         <div className="hero-text">
           <h1>
-            {continent.emoji} {continent.id}
+            <Icon name={continent.icon} size={26} /> {continent.id}
           </h1>
           <p className="dim">
             {masteredCount} of {list.length} countries mastered
@@ -44,16 +45,16 @@ export default function PathScreen({ countries, continentId, go }) {
 
       <div className="path-actions">
         <button className="btn btn-green" onClick={() => go('quiz', { mode: 'mc', scope })}>
-          🎯 Start Path Quiz
+          <Icon name="target" size={17} /> Start Path Quiz
         </button>
         <button className="btn btn-purple" onClick={() => go('quiz', { mode: 'reverse', scope })}>
-          🔁 Reverse Quiz
+          <Icon name="repeat" size={17} /> Reverse Quiz
         </button>
         <button className="btn btn-blue" onClick={() => go('match', { scope })}>
-          🧩 Capital Match
+          <Icon name="puzzle" size={17} /> Capital Match
         </button>
         <button className="btn btn-red" onClick={() => go('quiz', { mode: 'timed', scope })}>
-          ⏱️ Sprint
+          <Icon name="timer" size={17} /> Sprint
         </button>
       </div>
 

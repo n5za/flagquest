@@ -1,4 +1,5 @@
 import Mascot from './Mascot.jsx';
+import Icon from './Icon.jsx';
 
 export default function ErrorScreen({ onRetry }) {
   return (
@@ -11,7 +12,7 @@ export default function ErrorScreen({ onRetry }) {
         Check your internet connection and try again.
       </p>
       <button className="btn btn-blue" onClick={onRetry}>
-        🔄 Retry
+        <Icon name="refresh" size={18} /> Retry
       </button>
     </div>
   );

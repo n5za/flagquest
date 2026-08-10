@@ -4,6 +4,7 @@ import { pickMatchCountries, shuffle } from '../lib/quiz.js';
 import { sound } from '../lib/sound.js';
 import { burst } from '../lib/confetti.js';
 import { MATCH_PAIRS } from '../data/modes.js';
+import Icon from './Icon.jsx';
 
 export default function MatchScreen({ scope, countries, go }) {
   const { recordAnswer, finishQuiz } = useGame();
@@ -84,7 +85,7 @@ export default function MatchScreen({ scope, countries, go }) {
     <div className="match">
       <div className="quiz-top">
         <button className="icon-btn" onClick={() => go('home')} aria-label="Quit match">
-          ✕
+          <Icon name="x" size={18} />
         </button>
         <div className="quiz-segs">
           {Array.from({ length: MATCH_PAIRS }, (_, i) => (
@@ -97,7 +98,7 @@ export default function MatchScreen({ scope, countries, go }) {
       </div>
 
       <div className="match-hud">
-        <h1 className="match-title">🧩 Flag → Capital</h1>
+        <h1 className="match-title"><Icon name="puzzle" size={22} /> Flag → Capital</h1>
         <p className="dim">Tap a flag, then its capital. Match all {MATCH_PAIRS} pairs!</p>
       </div>
 

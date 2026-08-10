@@ -7,6 +7,7 @@ import { burst } from '../lib/confetti.js';
 import { MODES, QUIZ_LEN, TIMED_SECONDS, SPEED_MS, CHALLENGE_BONUS } from '../data/modes.js';
 import { todayKey } from '../lib/gameMath.js';
 import Mascot from './Mascot.jsx';
+import Icon from './Icon.jsx';
 
 const PRAISE = ['Correct!', 'Nice!', 'Bravo!', 'You got it!', 'Legend!', 'Boom!'];
 
@@ -54,7 +55,7 @@ export default function QuizScreen({ mode, scope, countries, go }) {
 
   useEffect(() => {
     if (isChallenge && progress.daily?.date === todayKey()) {
-      pushToast('Daily challenge already completed — come back tomorrow!', '📅');
+      pushToast('Daily challenge already completed — come back tomorrow!', 'calendar');
       go('home');
     }
   }, [isChallenge, progress.daily, go, pushToast]);
@@ -202,7 +203,7 @@ export default function QuizScreen({ mode, scope, countries, go }) {
           onClick={() => go('home')}
           aria-label="Quit quiz"
         >
-          ✕
+          <Icon name="x" size={18} />
         </button>
         <div className="quiz-segs">
           {isTimed ? (
@@ -219,7 +220,9 @@ export default function QuizScreen({ mode, scope, countries, go }) {
           )}
         </div>
         {isTimed ? (
-          <span className={`timer-chip ${timeLeft <= 10 ? 'urgent' : ''}`}>⏱ {timeLeft}</span>
+          <span className={`timer-chip ${timeLeft <= 10 ? 'urgent' : ''}`}>
+            <Icon name="timer" size={15} /> {timeLeft}
+          </span>
         ) : (
           <span className="counter-chip">
             {idx + 1}/{totalQs}
@@ -231,7 +234,7 @@ export default function QuizScreen({ mode, scope, countries, go }) {
         <div className="timed-hud">
           <span className="hud-score">Score {stats.score}</span>
           <span className={`hud-combo ${stats.streak >= 2 ? 'active' : ''}`}>
-            🔥 combo {stats.streak}
+            <Icon name="flame" size={15} /> combo {stats.streak}
           </span>
         </div>
       )}

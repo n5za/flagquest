@@ -247,6 +247,12 @@ img {
   color: var(--red);
 }
 
+.hero-text h1 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 /* ---------- Cards ---------- */
 
 .card {
@@ -276,6 +282,8 @@ img {
   font-weight: 900;
   padding: 6px 14px;
   margin-bottom: 12px;
+  display: inline-flex;
+  align-items: center;
 }
 
 /* ---------- Home ---------- */
@@ -366,6 +374,9 @@ img {
   color: var(--yellow);
   font-size: 14px;
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .challenge-card.done .challenge-cta {
@@ -389,7 +400,12 @@ img {
 }
 
 .mode-icon {
-  font-size: 34px;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--mode-color, var(--blue));
 }
 
 .mode-name {
@@ -406,6 +422,9 @@ img {
   font-size: 12px;
   color: var(--yellow);
   font-weight: 900;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .path-grid {
@@ -654,6 +673,9 @@ img {
   padding: 5px 12px;
   font-weight: 900;
   font-variant-numeric: tabular-nums;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .timer-chip.urgent {
@@ -687,6 +709,9 @@ img {
   font-weight: 900;
   color: var(--text-dim);
   transition: transform 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .hud-combo.active {
@@ -865,6 +890,9 @@ img {
 .match-title {
   margin: 0;
   font-size: 22px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .match-grid {
@@ -999,6 +1027,10 @@ img {
   font-weight: 900;
 }
 
+.stat-num svg {
+  vertical-align: -3px;
+}
+
 .stat-num.green {
   color: var(--green);
 }
@@ -1042,7 +1074,11 @@ img {
 }
 
 .badge-icon {
-  font-size: 34px;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .badge-name {
@@ -1072,6 +1108,9 @@ img {
   padding: 8px 14px;
   font-size: 13px;
   font-weight: 900;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .lb-tab.active {
@@ -1102,6 +1141,9 @@ img {
   font-size: 22px;
   width: 34px;
   text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .lb-main {
@@ -1155,6 +1197,9 @@ img {
 .settings-label {
   font-weight: 900;
   font-size: 15px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
 }
 
 .settings-hint {
@@ -1263,7 +1308,8 @@ img {
 }
 
 .toast-icon {
-  font-size: 20px;
+  display: inline-flex;
+  align-items: center;
 }
 
 /* ---------- Loading / error ---------- */

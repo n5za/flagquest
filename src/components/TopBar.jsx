@@ -1,5 +1,6 @@
 import { useGame } from '../state/GameContext.jsx';
 import Mascot from './Mascot.jsx';
+import Icon from './Icon.jsx';
 import { levelFromXp } from '../lib/gameMath.js';
 
 export default function TopBar({ go, offline }) {
@@ -18,16 +19,16 @@ export default function TopBar({ go, offline }) {
           </div>
         </div>
         <div className="chip" title="Daily login streak">
-          <span className="flame">🔥</span>
+          <Icon name="flame" size={15} />
           <span>{progress.dailyStreak}</span>
           {progress.freezes > 0 && (
             <span className="freeze-chip" title="Streak freezes">
-              ❄️ {progress.freezes}
+              <Icon name="snowflake" size={12} /> {progress.freezes}
             </span>
           )}
         </div>
         <div className="chip xp-chip" title="Total XP">
-          <span>⭐</span>
+          <Icon name="star" size={15} />
           <span>{progress.totalXp}</span>
         </div>
         <button
@@ -35,11 +36,11 @@ export default function TopBar({ go, offline }) {
           onClick={() => setSetting('sound', !settings.sound)}
           aria-label={settings.sound ? 'Mute sounds' : 'Unmute sounds'}
         >
-          {settings.sound ? '🔊' : '🔇'}
+          {settings.sound ? <Icon name="volume2" size={19} /> : <Icon name="volumeX" size={19} />}
         </button>
         {offline && (
           <span className="chip offline-chip" title="Using cached data — you are offline">
-            📴
+            <Icon name="wifiOff" size={15} />
           </span>
         )}
       </div>
