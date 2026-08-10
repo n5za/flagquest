@@ -22,7 +22,7 @@ function bad(reason, status = 400) {
   });
 }
 
-export default async function handler(req) {
+export async function POST(req) {
   if (req.method !== 'POST') return bad('method', 405);
   if (!SERVICE_KEY) return bad('config', 503);
 
