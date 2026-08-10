@@ -47,7 +47,7 @@ function rest(path, body, prefer) {
 async function isRealUser(id) {
   try {
     const res = await fetch(`${API}/auth/v1/admin/users/${id}`, {
-      headers: { Authorization: `Bearer ${SERVICE_KEY}` },
+      headers: { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}` },
     });
     return res.ok;
   } catch {

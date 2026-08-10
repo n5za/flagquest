@@ -15,6 +15,17 @@ function limited(key, windowMs, max) {
   return false;
 }
 
+async function isRealUser(id) {
+  try {
+    const res = await fetch(`${API}/auth/v1/admin/users/${id}`, {
+      headers: { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}` },
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
 function bad(reason, status = 400) {
   return new Response(JSON.stringify({ ok: false, reason }), {
     status,
@@ -39,6 +50,7 @@ export async function POST(req) {
 
   const ip = (req.headers.get('x-forwarded-for') || '').split(',')[0].trim() || 'unknown';
   if (limited(`ip:${ip}`, 60_000, 30) || limited(`u:${player_id}`, 60_000, 10)) return bad('rate', 429);
+  if (!(await isRealUser(player_id))) return bad('player');
 
   const res = await fetch(`${API}/rest/v1/players?on_conflict=id`, {
     method: 'POST',
