@@ -28,7 +28,7 @@ export default function MatchScreen({ scope, countries, go }) {
     const detail = `${pairs}/${MATCH_PAIRS} pairs · ${Math.round(timeMs / 1000)}s${
       mistakes ? ` · ${mistakes} mistake${mistakes > 1 ? 's' : ''}` : ' · flawless'
     }`;
-    finishQuiz('match', { score: pairs, correct: pairs, total: MATCH_PAIRS, timeMs, detail });
+    finishQuiz('match', { score: pairs, correct: pairs, total: MATCH_PAIRS, timeMs, detail, xp: xpEarned });
     go('results', {
       mode: 'match',
       scope,

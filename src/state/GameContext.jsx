@@ -170,12 +170,13 @@ export function GameProvider({ countries, children }) {
   }, []);
 
   const finishQuiz = useCallback(
-    (mode, { score, correct, total, timeMs, detail, answerXp = 0 }) => {
+    (mode, { score, correct, total, timeMs, detail, answerXp = 0, xp = 0 }) => {
       addSession(mode, {
         date: new Date().toISOString(),
         score,
         time: timeMs,
         detail,
+        xp,
       });
       const acc = total > 0 ? correct / total : 0;
       if (mode === 'challenge') {

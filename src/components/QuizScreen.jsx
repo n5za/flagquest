@@ -77,6 +77,7 @@ export default function QuizScreen({ mode, scope, countries, go }) {
         timeMs,
         detail,
         answerXp: st.xp,
+        xp,
       });
       go('results', {
         mode,

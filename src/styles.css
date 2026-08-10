@@ -271,6 +271,9 @@ img {
 .page-title {
   margin: 6px 4px 4px;
   font-size: 26px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .back-btn {
@@ -431,6 +434,52 @@ img {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+.nav-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.nav-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 14px;
+  text-align: left;
+  color: var(--text);
+  font-weight: 800;
+}
+
+.nav-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--blue) 18%, transparent);
+  color: var(--blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-card:nth-child(2) .nav-icon {
+  background: color-mix(in srgb, var(--yellow) 18%, transparent);
+  color: var(--yellow);
+}
+
+.nav-card:nth-child(3) .nav-icon {
+  background: color-mix(in srgb, var(--purple) 18%, transparent);
+  color: var(--purple);
+}
+
+.nav-name {
+  font-size: 14px;
+}
+
+.nav-desc {
+  font-size: 11px;
 }
 
 .path-card {
@@ -1057,6 +1106,46 @@ img {
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: 10px;
   margin-top: 12px;
+}
+
+.cup-section {
+  margin-top: 18px;
+}
+
+.cup-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 2px;
+}
+
+.cup-trophy {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--yellow) 22%, transparent);
+  color: var(--yellow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.cup-head .section-title {
+  margin: 0;
+}
+
+.cup-xp {
+  font-weight: 900;
+  font-size: 14px;
+  color: var(--yellow);
+  white-space: nowrap;
+}
+
+.cup-row .lb-score {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .badge {

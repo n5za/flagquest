@@ -4,7 +4,7 @@ import { MODES } from '../data/modes.js';
 import ConfirmModal from './ConfirmModal.jsx';
 import Icon from './Icon.jsx';
 
-const MEDAL_COLORS = ['#ffc800', '#c9ccd4', '#cd7f32'];
+const CUP_COLORS = ['#ffc800', '#c9ccd4', '#cd7f32'];
 
 function fmtDate(iso) {
   try {
@@ -25,14 +25,66 @@ export default function LeaderboardScreen({ go }) {
   const [confirming, setConfirming] = useState(false);
   const sessions = leaderboards[tab] || [];
 
+  const allSessions = Object.entries(leaderboards)
+    .flatMap(([mode, list]) =>
+      (list || []).map((s) => ({ mode, ...s }))
+    )
+    .sort((a, b) => (b.xp ?? b.score) - (a.xp ?? a.score) || a.time - b.time)
+    .slice(0, 5);
+
+  const cupTotal = allSessions.reduce((acc, s) => acc + (s.xp ?? s.score), 0);
+
   return (
     <div>
       <button className="back-btn" onClick={() => go('home')} aria-label="Back to home">
         <Icon name="arrowLeft" size={20} />
       </button>
-      <h1 className="page-title">Leaderboard</h1>
-      <p className="dim">Top 5 sessions per mode, stored on this device.</p>
+      <h1 className="page-title">
+        <Icon name="globe" size={24} /> Leaderboard
+      </h1>
+      <p className="dim">Top runs on this device — stored in cache, no login needed.</p>
 
+      <section className="cup-section">
+        <div className="cup-head">
+          <span className="cup-trophy">
+            <Icon name="trophy" size={26} />
+          </span>
+          <div className="cup-head-text">
+            <h2 className="section-title">XP World Cup</h2>
+            <p className="dim small">Your best XP runs · {cupTotal} XP total</p>
+          </div>
+        </div>
+        {allSessions.length === 0 ? (
+          <div className="card empty-state">
+            <p>No runs yet.</p>
+            <p className="dim">Play any mode and your top XP runs will climb the ladder!</p>
+          </div>
+        ) : (
+          <div className="lb-list">
+            {allSessions.map((s, i) => (
+              <div key={`${s.mode}-${s.date}-${i}`} className={`card lb-row cup-row ${i === 0 ? 'top' : ''}`}>
+                <span className="lb-rank">
+                  {i < 3 ? (
+                    <Icon name="trophy" size={22} style={{ color: CUP_COLORS[i] }} />
+                  ) : (
+                    `#${i + 1}`
+                  )}
+                </span>
+                <div className="lb-main">
+                  <span className="lb-score">
+                    <Icon name={MODES[s.mode]?.icon || 'target'} size={13} /> {MODES[s.mode]?.title || s.mode}
+                  </span>
+                  <span className="lb-detail dim">{s.detail}</span>
+                </div>
+                <span className="cup-xp">+{s.xp ?? s.score} XP</span>
+                <span className="lb-date dim">{fmtDate(s.date)}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <h2 className="section-title">By Mode</h2>
       <div className="lb-tabs" role="tablist">
         {Object.entries(MODES).map(([key, m]) => (
           <button
@@ -58,7 +110,7 @@ export default function LeaderboardScreen({ go }) {
             <div key={`${s.date}-${i}`} className={`card lb-row ${i === 0 ? 'top' : ''}`}>
               <span className="lb-rank">
                 {i < 3 ? (
-                  <Icon name="medal" size={22} style={{ color: MEDAL_COLORS[i] }} />
+                  <Icon name="medal" size={22} style={{ color: CUP_COLORS[i] }} />
                 ) : (
                   `#${i + 1}`
                 )}

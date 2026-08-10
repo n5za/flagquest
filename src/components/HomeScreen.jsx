@@ -1,6 +1,7 @@
 import { useGame } from '../state/GameContext.jsx';
 import { MODES, CHALLENGE_BONUS } from '../data/modes.js';
 import { CONTINENTS, UNLOCK_MASTERY } from '../data/continents.js';
+import { BADGES } from '../data/badges.js';
 import { levelFromXp, todayKey } from '../lib/gameMath.js';
 import Mascot from './Mascot.jsx';
 import Icon from './Icon.jsx';
@@ -129,6 +130,35 @@ export default function HomeScreen({ countries, go }) {
               </button>
             );
           })}
+        </div>
+      </section>
+
+      <section>
+        <h2 className="section-title">Library</h2>
+        <div className="nav-grid">
+          <button className="card nav-card" onClick={() => go('badges')}>
+            <span className="nav-icon">
+              <Icon name="award" size={22} />
+            </span>
+            <span className="nav-name">Badges</span>
+            <span className="nav-desc dim">
+              {progress.badges.length} of {BADGES.length} unlocked
+            </span>
+          </button>
+          <button className="card nav-card" onClick={() => go('leaderboard')}>
+            <span className="nav-icon">
+              <Icon name="trophy" size={22} />
+            </span>
+            <span className="nav-name">Leaderboard</span>
+            <span className="nav-desc dim">XP World Cup · per-mode runs</span>
+          </button>
+          <button className="card nav-card" onClick={() => go('settings')}>
+            <span className="nav-icon">
+              <Icon name="settings" size={22} />
+            </span>
+            <span className="nav-name">Settings</span>
+            <span className="nav-desc dim">Sound, theme, data</span>
+          </button>
         </div>
       </section>
     </div>

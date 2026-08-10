@@ -1,6 +1,7 @@
 import {
   AlertTriangle,
   ArrowLeft,
+  Award,
   Bird,
   Building2,
   Calendar,
@@ -30,6 +31,7 @@ import {
   Trash2,
   TreePalm,
   Trophy,
+  Settings,
   Volume2,
   VolumeX,
   WifiOff,
@@ -40,6 +42,7 @@ import {
 const ICONS = {
   alert: AlertTriangle,
   arrowLeft: ArrowLeft,
+  award: Award,
   bird: Bird,
   building2: Building2,
   calendar: Calendar,
@@ -62,6 +65,7 @@ const ICONS = {
   repeat: Repeat,
   snowflake: Snowflake,
   sprout: Sprout,
+  settings: Settings,
   star: Star,
   sun: Sun,
   target: Target,
