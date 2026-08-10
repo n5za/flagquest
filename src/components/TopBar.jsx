@@ -3,7 +3,7 @@ import Mascot from './Mascot.jsx';
 import Icon from './Icon.jsx';
 import { levelFromXp } from '../lib/gameMath.js';
 
-export default function TopBar({ go, offline }) {
+export default function TopBar({ go }) {
   const { progress, settings, setSetting } = useGame();
   const { level, pct } = levelFromXp(progress.totalXp);
   return (
@@ -38,11 +38,6 @@ export default function TopBar({ go, offline }) {
         >
           {settings.sound ? <Icon name="volume2" size={19} /> : <Icon name="volumeX" size={19} />}
         </button>
-        {offline && (
-          <span className="chip offline-chip" title="Using cached data — you are offline">
-            <Icon name="wifiOff" size={15} />
-          </span>
-        )}
       </div>
     </header>
   );

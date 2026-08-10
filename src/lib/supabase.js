@@ -56,12 +56,15 @@ export async function updateNickname(raw) {
   } catch {
     /* storage unavailable — still try server */
   }
-  if (!supabase) return { ok: true, name, offline: true };
   const user = await ensurePlayer();
   if (!user) return { ok: true, name, offline: true };
   try {
-    const { error } = await supabase.from('players').upsert({ id: user.id, name }, { onConflict: 'id' });
-    if (error) throw error;
+    const res = await fetch('/api/name', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ player_id: user.id, name }),
+    });
+    if (!res.ok) return { ok: true, name, offline: true };
     return { ok: true, name };
   } catch {
     return { ok: true, name, offline: true };
@@ -76,25 +79,25 @@ function nicknameFor(id) {
 }
 
 export async function syncXpRun({ mode, score, correct, total, detail, xp }) {
-  if (!supabase || !xp) return false;
+  if (!xp) return false;
   try {
     const user = await ensurePlayer();
     if (!user) return false;
-    const { error } = await supabase
-      .from('players')
-      .upsert({ id: user.id, name: savedName() || nicknameFor(user.id) }, { onConflict: 'id' });
-    if (error) throw error;
-    const { error: xpErr } = await supabase.from('xp_scores').insert({
-      player_id: user.id,
-      mode,
-      score,
-      correct,
-      total,
-      detail,
-      xp,
+    const res = await fetch('/api/xp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        player_id: user.id,
+        name: savedName() || undefined,
+        mode,
+        score,
+        correct,
+        total,
+        detail,
+        xp,
+      }),
     });
-    if (xpErr) throw xpErr;
-    return true;
+    return res.ok;
   } catch {
     return false;
   }

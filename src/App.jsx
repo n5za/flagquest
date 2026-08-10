@@ -14,10 +14,17 @@ import LoadingScreen from './components/LoadingScreen.jsx';
 import ErrorScreen from './components/ErrorScreen.jsx';
 import Toasts from './components/Toasts.jsx';
 import LevelUpModal from './components/LevelUpModal.jsx';
+import LandingPage from './components/LandingPage.jsx';
+
+const isAppPath = () => window.location.pathname === '/app' || window.location.pathname.startsWith('/app/');
 
 export default function App() {
   const [data, setData] = useState({ status: 'loading', countries: [] });
   const [screen, setScreen] = useState({ name: 'home', params: {} });
+
+  const [isApp] = useState(isAppPath);
+
+  if (!isApp) return <LandingPage />;
 
   const load = useCallback(async (force = false) => {
     setData((d) => ({ ...d, status: 'loading' }));
@@ -44,7 +51,7 @@ export default function App() {
     <GameProvider countries={ready ? data.countries : []}>
       <div className="app">
         {data.status !== 'loading' && (
-          <TopBar go={go} offline={ready && data.offline} />
+          <TopBar go={go} />
         )}
         {data.status === 'loading' && <LoadingScreen />}
         {data.status === 'error' && <ErrorScreen onRetry={() => load(true)} />}

@@ -35,7 +35,6 @@ import {
   Settings,
   Volume2,
   VolumeX,
-  WifiOff,
   X,
   Zap,
 } from 'lucide-react';
@@ -77,7 +76,6 @@ const ICONS = {
   trophy: Trophy,
   volume2: Volume2,
   volumeX: VolumeX,
-  wifiOff: WifiOff,
   x: X,
   zap: Zap,
 };
