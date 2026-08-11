@@ -1,58 +1,59 @@
-const CACHE = 'flagquest-v1';
-const CORE = ['./', './index.html', './manifest.json', './icon.svg'];
+const CACHE = 'fq-v3';
+const SHELL = [
+  '/',
+  '/app',
+  '/manifest.json',
+  '/icon.svg',
+];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(
-    caches
-      .open(CACHE)
-      .then((c) => c.addAll(CORE))
-      .then(() => self.skipWaiting())
+    caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting())
   );
 });
 
 self.addEventListener('activate', (e) => {
   e.waitUntil(
-    caches
-      .keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
-      .then(() => self.clients.claim())
+    caches.keys().then((keys) =>
+      Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))
+    ).then(() => self.clients.claim())
   );
 });
 
 self.addEventListener('fetch', (e) => {
-  const { request } = e;
-  if (request.method !== 'GET') return;
-  const url = new URL(request.url);
-  const isAppAsset = url.origin === self.location.origin;
-  const isFlagOrData = /^https:\/\/(cdn\.jsdelivr\.net|flagcdn\.com|fonts\.googleapis\.com|fonts\.gstatic\.com)/.test(
-    url.origin
-  );
+  const url = new URL(e.request.url);
 
-  if (request.mode === 'navigate') {
+  if (e.request.method !== 'GET') return;
+  if (url.origin !== location.origin &&
+      !url.hostname.includes('fonts.g') &&
+      !url.hostname.includes('flagcdn.com') &&
+      !url.hostname.includes('restcountries.com')) return;
+
+  // Network-first for REST countries API (fresh data, fallback to cache)
+  if (url.hostname.includes('restcountries.com')) {
     e.respondWith(
-      fetch(request)
+      fetch(e.request)
         .then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put(request, copy));
+          const clone = res.clone();
+          caches.open(CACHE).then((c) => c.put(e.request, clone));
           return res;
         })
-        .catch(() => caches.match(request).then((m) => m || caches.match('./index.html')))
+        .catch(() => caches.match(e.request))
     );
     return;
   }
 
-  if (isAppAsset || isFlagOrData) {
-    e.respondWith(
-      caches.match(request).then((cached) => {
-        if (cached) return cached;
-        return fetch(request).then((res) => {
-          if (res && res.ok) {
-            const copy = res.clone();
-            caches.open(CACHE).then((c) => c.put(request, copy));
-          }
-          return res;
-        });
-      })
-    );
-  }
+  // Cache-first for everything else (fonts, flags, app shell)
+  e.respondWith(
+    caches.match(e.request).then((cached) => {
+      if (cached) return cached;
+      return fetch(e.request).then((res) => {
+        if (res.ok) {
+          const clone = res.clone();
+          caches.open(CACHE).then((c) => c.put(e.request, clone));
+        }
+        return res;
+      });
+    })
+  );
 });
