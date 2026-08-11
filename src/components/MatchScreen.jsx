@@ -7,7 +7,7 @@ import { MATCH_PAIRS } from '../data/modes.js';
 import Icon from './Icon.jsx';
 
 export default function MatchScreen({ scope, countries, go }) {
-  const { recordAnswer, finishQuiz } = useGame();
+  const { recordAnswer, finishQuiz, t } = useGame();
 
   const [picked] = useState(() => pickMatchCountries(scope, countries));
   const [flags] = useState(() => shuffle(picked));
@@ -25,14 +25,20 @@ export default function MatchScreen({ scope, countries, go }) {
     finished.current = true;
     const timeMs = Date.now() - start.current;
     const pairs = matched.size;
-    const detail = `${pairs}/${MATCH_PAIRS} pairs · ${Math.round(timeMs / 1000)}s${
-      mistakes ? ` · ${mistakes} mistake${mistakes > 1 ? 's' : ''}` : ' · flawless'
-    }`;
+    const secs = Math.round(timeMs / 1000);
+    const detail = mistakes
+      ? t(mistakes > 1 ? '{pairs}/{total} pairs · {secs}s · {mistakes} mistakes' : '{pairs}/{total} pairs · {secs}s · {mistakes} mistake', {
+          pairs,
+          total: MATCH_PAIRS,
+          secs,
+          mistakes,
+        })
+      : t('{pairs}/{total} pairs · {secs}s · flawless', { pairs, total: MATCH_PAIRS, secs });
     finishQuiz('match', { score: pairs, correct: pairs, total: MATCH_PAIRS, timeMs, detail, xp: xpEarned });
     go('results', {
       mode: 'match',
       scope,
-      title: 'Capital Match',
+      title: t('Capital Match'),
       correct: pairs,
       total: MATCH_PAIRS,
       xp: xpEarned,
@@ -43,7 +49,7 @@ export default function MatchScreen({ scope, countries, go }) {
       isNewBest: pairs === MATCH_PAIRS,
       isTimed: false,
     });
-  }, [matched.size, mistakes, xpEarned, finishQuiz, go, scope]);
+  }, [matched.size, mistakes, xpEarned, finishQuiz, go, scope, t]);
 
   useEffect(() => {
     if (matched.size === MATCH_PAIRS) {
@@ -84,7 +90,7 @@ export default function MatchScreen({ scope, countries, go }) {
   return (
     <div className="match">
       <div className="quiz-top">
-        <button className="icon-btn" onClick={() => go('home')} aria-label="Quit match">
+        <button className="icon-btn" onClick={() => go('home')} aria-label={t('Quit match')}>
           <Icon name="x" size={18} />
         </button>
         <div className="quiz-segs">
@@ -98,8 +104,8 @@ export default function MatchScreen({ scope, countries, go }) {
       </div>
 
       <div className="match-hud">
-        <h1 className="match-title"><Icon name="puzzle" size={22} /> Flag → Capital</h1>
-        <p className="dim">Tap a flag, then its capital. Match all {MATCH_PAIRS} pairs!</p>
+        <h1 className="match-title"><Icon name="puzzle" size={22} /> {t('Flag → Capital')}</h1>
+        <p className="dim">{t('Tap a flag, then its capital. Match all {n} pairs!', { n: MATCH_PAIRS })}</p>
       </div>
 
       <div className="match-grid">
@@ -112,7 +118,7 @@ export default function MatchScreen({ scope, countries, go }) {
               }`}
               onClick={() => clickFlag(c)}
             >
-              <img className="pair-flag" src={c.flag} alt={`Flag of ${c.name}`} loading="lazy" />
+              <img className="pair-flag" src={c.flag} alt={t('Flag of {name}', { name: c.name })} loading="lazy" />
               <span className="pair-label">{c.name}</span>
             </button>
           ))}

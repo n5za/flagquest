@@ -6,7 +6,7 @@ import Icon from './Icon.jsx';
 import { burst } from '../lib/confetti.js';
 
 export default function ResultsScreen({ params, go }) {
-  const { progress } = useGame();
+  const { progress, t } = useGame();
   const acc = params.total > 0 ? Math.round((params.correct / params.total) * 100) : 0;
   const perfect = acc === 100 && params.total > 0;
 
@@ -22,12 +22,12 @@ export default function ResultsScreen({ params, go }) {
     <div className="results">
       <section className="card results-hero">
         <Mascot mood={acc >= 60 ? 'happy' : 'sad'} size={90} />
-        <h1 className="results-title">{perfect ? 'Perfect round!' : acc >= 60 ? 'Great job!' : 'Keep going!'}</h1>
-        <p className="dim">{params.title}{params.scope?.type === 'continent' ? ` · ${params.scope.id}` : ''}</p>
+        <h1 className="results-title">{perfect ? t('Perfect round!') : acc >= 60 ? t('Great job!') : t('Keep going!')}</h1>
+        <p className="dim">{params.title}{params.scope?.type === 'continent' ? ` · ${t(params.scope.id)}` : ''}</p>
         <Ring pct={acc} color={color} size={130} />
         {params.isNewBest && params.score > 0 && (
           <span className="tag tag-new-best">
-            <Icon name="trophy" size={13} /> New best!
+            <Icon name="trophy" size={13} /> {t('New best!')}
           </span>
         )}
       </section>
@@ -35,20 +35,20 @@ export default function ResultsScreen({ params, go }) {
       <section className="results-stats">
         <div className="card stat">
           <span className="stat-num">{params.correct}/{params.total}</span>
-          <span className="stat-label dim">Correct</span>
+          <span className="stat-label dim">{t('Correct')}</span>
         </div>
         <div className="card stat">
           <span className="stat-num green">+{params.xp} XP</span>
-          <span className="stat-label dim">Earned</span>
+          <span className="stat-label dim">{t('Earned')}</span>
         </div>
         <div className="card stat">
           <span className="stat-num"><Icon name="flame" size={17} /> {params.bestStreak}</span>
-          <span className="stat-label dim">Best streak</span>
+          <span className="stat-label dim">{t('Best streak')}</span>
         </div>
         {params.isTimed && (
           <div className="card stat">
             <span className="stat-num blue">{params.score}</span>
-            <span className="stat-label dim">Score</span>
+            <span className="stat-label dim">{t('Score')}</span>
           </div>
         )}
       </section>
@@ -56,27 +56,27 @@ export default function ResultsScreen({ params, go }) {
       <section className="results-actions">
         {params.isChallenge ? (
           <button className="btn btn-ghost" disabled>
-            <Icon name="calendar" size={18} /> Come back tomorrow
+            <Icon name="calendar" size={18} /> {t('Come back tomorrow')}
           </button>
         ) : (
           <button
-            className="btn btn-green"
+            className="btn btn-primary"
             onClick={() => go('quiz', { mode: params.mode, scope: params.scope })}
           >
-            <Icon name="play" size={17} /> Play again
+            <Icon name="play" size={17} /> {t('Play again')}
           </button>
         )}
         <button className="btn btn-ghost" onClick={() => go('home')}>
-          <Icon name="home" size={18} /> Home
+          <Icon name="home" size={18} /> {t('Home')}
         </button>
       </section>
 
       {params.challengeBonus > 0 && (
-        <p className="dim center">Includes +{params.challengeBonus} daily bonus</p>
+        <p className="dim center">{t('Includes +{bonus} daily bonus', { bonus: params.challengeBonus })}</p>
       )}
 
       <p className="dim center">
-        Total XP: {progress.totalXp}
+        {t('Total XP: {xp}', { xp: progress.totalXp })}
       </p>
     </div>
   );

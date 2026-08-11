@@ -21,7 +21,7 @@ function fmtDate(iso) {
 }
 
 export default function LeaderboardScreen({ go }) {
-  const { leaderboards, clearLeaderboards } = useGame();
+  const { leaderboards, clearLeaderboards, t } = useGame();
   const [tab, setTab] = useState('mc');
   const [confirming, setConfirming] = useState(false);
   const [global, setGlobal] = useState(null);
@@ -54,12 +54,12 @@ export default function LeaderboardScreen({ go }) {
     e.preventDefault();
     const res = await updateNickname(draft);
     if (!res.ok) {
-      setEditMsg(res.reason === 'chars' ? 'Letters, numbers, spaces, _ and - only.' : '3–24 characters, please.');
+      setEditMsg(res.reason === 'chars' ? t('Letters, numbers, spaces, _ and - only.') : t('3–24 characters, please.'));
       return;
     }
     setMe((m) => ({ id: m?.id, name: res.name }));
     setEditing(false);
-    setEditMsg(res.offline ? 'Saved on this device — will sync when online.' : null);
+    setEditMsg(res.offline ? t('Saved on this device — will sync when online.') : null);
     fetchGlobalLadder().then((rows) => {
       if (rows) setGlobal(rows);
     });
@@ -77,14 +77,14 @@ export default function LeaderboardScreen({ go }) {
 
   return (
     <div>
-      <button className="back-btn" onClick={() => go('home')} aria-label="Back to home">
+      <button className="back-btn" onClick={() => go('home')} aria-label={t('Back to home')}>
         <Icon name="arrowLeft" size={20} />
       </button>
       <h1 className="page-title">
-        <Icon name="globe" size={24} /> Leaderboard
+        <Icon name="globe" size={24} /> {t('Leaderboard')}
       </h1>
       <p className="dim">
-        {global ? 'Live ladder, synced from the cloud — no login needed.' : 'Top runs on this device — stored in cache, no login needed.'}
+        {global ? t('Live ladder, synced from the cloud — no login needed.') : t('Top runs on this device — stored in cache, no login needed.')}
       </p>
 
       <section className="cup-section">
@@ -93,11 +93,11 @@ export default function LeaderboardScreen({ go }) {
             <Icon name="trophy" size={26} />
           </span>
           <div className="cup-head-text">
-            <h2 className="section-title">XP World Cup</h2>
+            <h2 className="section-title">{t('XP World Cup')}</h2>
             <p className="dim small">
               {global
-                ? `Global top players · ${globalTotal} XP on the board`
-                : `Your best XP runs · ${localTotal} XP total`}
+                ? t('Global top players · {xp} XP on the board', { xp: globalTotal })
+                : t('Your best XP runs · {xp} XP total', { xp: localTotal })}
             </p>
           </div>
         </div>
@@ -111,22 +111,22 @@ export default function LeaderboardScreen({ go }) {
                   onChange={(e) => setDraft(e.target.value)}
                   maxLength={24}
                   autoFocus
-                  aria-label="Your name"
+                  aria-label={t('Your name')}
                 />
-                <button type="submit" className="icon-btn" aria-label="Save name">
+                <button type="submit" className="icon-btn" aria-label={t('Save name')}>
                   <Icon name="check" size={18} />
                 </button>
-                <button type="button" className="icon-btn" aria-label="Cancel" onClick={() => setEditing(false)}>
+                <button type="button" className="icon-btn" aria-label={t('Cancel')} onClick={() => setEditing(false)}>
                   <Icon name="x" size={18} />
                 </button>
               </form>
             ) : (
               <>
                 <div className="name-editor-display">
-                  <span className="name-editor-label">You play as</span>
+                  <span className="name-editor-label">{t('You play as')}</span>
                   <span className="name-editor-name">{me.name}</span>
                 </div>
-                <button className="icon-btn" aria-label="Edit your name" onClick={startEdit}>
+                <button className="icon-btn" aria-label={t('Edit your name')} onClick={startEdit}>
                   <Icon name="pencil" size={16} />
                 </button>
               </>
@@ -136,8 +136,8 @@ export default function LeaderboardScreen({ go }) {
         )}
         {rows.length === 0 ? (
           <div className="card empty-state">
-            <p>No runs yet.</p>
-            <p className="dim">Play any mode and your top XP runs will climb the ladder!</p>
+            <p>{t('No runs yet.')}</p>
+            <p className="dim">{t('Play any mode and your top XP runs will climb the ladder!')}</p>
           </div>
         ) : (
           <div className="lb-list">
@@ -153,10 +153,10 @@ export default function LeaderboardScreen({ go }) {
                 <div className="lb-main">
                   <span className="lb-score">
                     {p.local ? <Icon name={MODES[p.mode]?.icon || 'target'} size={13} /> : null}
-                    {p.local ? MODES[p.mode]?.title : p.name}
-                    {!p.local && me?.id === p.id && <span className="you-badge">You</span>}
+                    {p.local ? t(MODES[p.mode]?.title) : p.name}
+                    {!p.local && me?.id === p.id && <span className="you-badge">{t('You')}</span>}
                   </span>
-                  <span className="lb-detail dim">{p.local ? p.detail : 'FlagQuest player'}</span>
+                  <span className="lb-detail dim">{p.local ? p.detail : t('FlagQuest player')}</span>
                 </div>
                 <span className="cup-xp">+{p.xp} XP</span>
                 {!p.local && p.date && <span className="lb-date dim">{fmtDate(p.date)}</span>}
@@ -166,7 +166,7 @@ export default function LeaderboardScreen({ go }) {
         )}
       </section>
 
-      <h2 className="section-title">By Mode</h2>
+      <h2 className="section-title">{t('By Mode')}</h2>
       <div className="lb-tabs" role="tablist">
         {Object.entries(MODES).map(([key, m]) => (
           <button
@@ -176,15 +176,15 @@ export default function LeaderboardScreen({ go }) {
             className={`lb-tab ${tab === key ? 'active' : ''}`}
             onClick={() => setTab(key)}
           >
-            <Icon name={m.icon} size={15} /> {m.title}
+            <Icon name={m.icon} size={15} /> {t(m.title)}
           </button>
         ))}
       </div>
 
       {sessions.length === 0 ? (
         <div className="card empty-state">
-          <p>No sessions yet in this mode.</p>
-          <p className="dim">Play a round and your best runs will show up here!</p>
+          <p>{t('No sessions yet in this mode.')}</p>
+          <p className="dim">{t('Play a round and your best runs will show up here!')}</p>
         </div>
       ) : (
         <div className="lb-list">
@@ -209,15 +209,15 @@ export default function LeaderboardScreen({ go }) {
 
       {sessions.length > 0 && (
         <button className="btn btn-ghost danger-text" onClick={() => setConfirming(true)}>
-          <Icon name="trash" size={16} /> Clear leaderboard
+          <Icon name="trash" size={16} /> {t('Clear leaderboard')}
         </button>
       )}
 
       {confirming && (
         <ConfirmModal
-          title="Clear leaderboard?"
-          body="This removes all saved sessions for every mode on this device."
-          confirmLabel="Clear"
+          title={t('Clear leaderboard?')}
+          body={t('This removes all saved sessions for every mode on this device.')}
+          confirmLabel={t('Clear')}
           danger
           onConfirm={() => {
             clearLeaderboards();

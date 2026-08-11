@@ -9,17 +9,17 @@ import { todayKey } from '../lib/gameMath.js';
 import Mascot from './Mascot.jsx';
 import Icon from './Icon.jsx';
 
-const PRAISE = ['Correct!', 'Nice!', 'Bravo!', 'You got it!', 'Legend!', 'Boom!'];
+const PRAISE_KEYS = ['Correct!', 'Nice!', 'Bravo!', 'You got it!', 'Legend!', 'Boom!'];
 
-function scopeTitle(scope) {
-  if (scope.type === 'continent') return scope.id;
-  if (scope.type === 'country') return 'Practice';
-  if (scope.type === 'challenge') return 'Daily Challenge';
-  return 'Free play';
+function scopeTitle(scope, t) {
+  if (scope.type === 'continent') return t(scope.id);
+  if (scope.type === 'country') return t('Practice');
+  if (scope.type === 'challenge') return t('Daily Challenge');
+  return t('Free play');
 }
 
 export default function QuizScreen({ mode, scope, countries, go }) {
-  const { recordAnswer, finishQuiz, leaderboards, progress, pushToast } = useGame();
+  const { recordAnswer, finishQuiz, leaderboards, progress, pushToast, t } = useGame();
   const isTimed = mode === 'timed';
   const isChallenge = scope.type === 'challenge';
   const meta = MODES[mode];
@@ -55,10 +55,10 @@ export default function QuizScreen({ mode, scope, countries, go }) {
 
   useEffect(() => {
     if (isChallenge && progress.daily?.date === todayKey()) {
-      pushToast('Daily challenge already completed — come back tomorrow!', 'calendar');
+      pushToast(t('Daily challenge already completed — come back tomorrow!'), 'calendar');
       go('home');
     }
-  }, [isChallenge, progress.daily, go, pushToast]);
+  }, [isChallenge, progress.daily, go, pushToast, t]);
 
   const finish = useCallback(
     (st) => {
@@ -66,7 +66,7 @@ export default function QuizScreen({ mode, scope, countries, go }) {
       finished.current = true;
       const acc = st.total > 0 ? Math.round((st.correct / st.total) * 100) : 0;
       const detail = isTimed
-        ? `${st.correct} correct · best combo ${st.best}`
+        ? t('{correct} correct · best combo {best}', { correct: st.correct, best: st.best })
         : `${st.correct}/${st.total} · ${acc}%`;
       const timeMs = Date.now() - st.start;
       const xp = isChallenge ? st.xp + CHALLENGE_BONUS : st.xp;
@@ -82,7 +82,7 @@ export default function QuizScreen({ mode, scope, countries, go }) {
       go('results', {
         mode,
         scope,
-        title: meta.title,
+        title: t(meta.title),
         correct: st.correct,
         total: st.total,
         xp,
@@ -96,7 +96,7 @@ export default function QuizScreen({ mode, scope, countries, go }) {
         challengeBonus: isChallenge ? CHALLENGE_BONUS : 0,
       });
     },
-    [finishQuiz, go, isTimed, isChallenge, meta.title, mode, scope]
+    [finishQuiz, go, isTimed, isChallenge, t, mode, scope]
   );
 
   useEffect(() => {
@@ -146,7 +146,7 @@ export default function QuizScreen({ mode, scope, countries, go }) {
         ok = checkAnswer(q.correct, input);
         if (!ok && checkAnswer(q.correct, input, { lenient: true })) {
           ok = true;
-          note = 'Close enough!';
+          note = t('Close enough!');
         }
       } else {
         ok = q.options[choice].id === q.correct.id;
@@ -187,7 +187,7 @@ export default function QuizScreen({ mode, scope, countries, go }) {
       }
       timers.current.push(setTimeout(advance, ok ? 950 : 1800));
     },
-    [phase, round, idx, input, recordAnswer, mode, isTimed, isChallenge, advance]
+    [phase, round, idx, input, recordAnswer, mode, isTimed, isChallenge, advance, t]
   );
 
   const q = round.questions[idx];
@@ -202,7 +202,7 @@ export default function QuizScreen({ mode, scope, countries, go }) {
         <button
           className="icon-btn"
           onClick={() => go('home')}
-          aria-label="Quit quiz"
+          aria-label={t('Quit quiz')}
         >
           <Icon name="x" size={18} />
         </button>
@@ -233,9 +233,9 @@ export default function QuizScreen({ mode, scope, countries, go }) {
 
       {isTimed && (
         <div className="timed-hud">
-          <span className="hud-score">Score {stats.score}</span>
+          <span className="hud-score">{t('Score {s}', { s: stats.score })}</span>
           <span className={`hud-combo ${stats.streak >= 2 ? 'active' : ''}`}>
-            <Icon name="flame" size={15} /> combo {stats.streak}
+            <Icon name="flame" size={15} /> {t('combo {n}', { n: stats.streak })}
           </span>
         </div>
       )}
@@ -245,13 +245,13 @@ export default function QuizScreen({ mode, scope, countries, go }) {
           {q.mode === 'reverse' ? (
             <>
               <h2 className="q-name">{q.correct.name}</h2>
-              {q.correct.capital && <p className="dim">Capital: {q.correct.capital}</p>}
-              <p className="q-hint">Pick the right flag</p>
+              {q.correct.capital && <p className="dim">{t('Capital: {name}', { name: q.correct.capital })}</p>}
+              <p className="q-hint">{t('Pick the right flag')}</p>
             </>
           ) : (
             <>
-              <img className="q-flag" src={q.correct.flag} alt="Which country is this?" />
-              {q.mode === 'type' && <p className="q-hint">Type the country name</p>}
+              <img className="q-flag" src={q.correct.flag} alt={t('Which country is this?')} />
+              {q.mode === 'type' && <p className="q-hint">{t('Type the country name')}</p>}
             </>
           )}
         </div>
@@ -269,7 +269,7 @@ export default function QuizScreen({ mode, scope, countries, go }) {
               autoFocus
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Country name…"
+              placeholder={t('Country name…')}
               autoComplete="off"
               autoCapitalize="off"
               spellCheck="false"
@@ -280,7 +280,7 @@ export default function QuizScreen({ mode, scope, countries, go }) {
               type="submit"
               disabled={!input.trim() || phase !== 'question'}
             >
-              Check
+              {t('Check')}
             </button>
           </form>
         ) : (
@@ -302,7 +302,7 @@ export default function QuizScreen({ mode, scope, countries, go }) {
                   disabled={phase !== 'question'}
                 >
                   {q.mode === 'reverse' ? (
-                    <img className="opt-flag" src={o.flag} alt={`Flag of ${o.name}`} loading="lazy" />
+                    <img className="opt-flag" src={o.flag} alt={t('Flag of {name}', { name: o.name })} loading="lazy" />
                   ) : (
                     o.name
                   )}
@@ -315,12 +315,12 @@ export default function QuizScreen({ mode, scope, countries, go }) {
         {phase === 'feedback' && (
           <div className={`feedback-overlay ${feedback.ok ? 'ok' : 'no'}`}>
             <Mascot mood={feedback.ok ? 'happy' : 'sad'} size={72} />
-            <h2>{feedback.ok ? PRAISE[(Math.random() * PRAISE.length) | 0] : 'Not quite'}</h2>
+            <h2>{feedback.ok ? t(PRAISE_KEYS[(Math.random() * PRAISE_KEYS.length) | 0]) : t('Not quite')}</h2>
             {feedback.note && <p className="feedback-note">{feedback.note}</p>}
             {!feedback.ok && (
               <p className="feedback-answer">
                 {q.mode === 'reverse' ? <img className="opt-flag" src={q.correct.flag} alt="" /> : null}
-                It's <strong>{q.correct.name}</strong>
+                {t("It's {name}", { name: q.correct.name })}
                 {q.correct.capital ? ` · ${q.correct.capital}` : ''}
               </p>
             )}

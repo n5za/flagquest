@@ -5,6 +5,7 @@ export const MODES = {
   timed: { title: 'Timed Sprint', icon: 'timer', desc: '60s. Max correct.', color: '#ff4b4b' },
   reverse: { title: 'Reverse Mode', icon: 'repeat', desc: 'Name → flag', color: '#ff9600' },
   challenge: { title: 'Daily Challenge', icon: 'calendar', desc: 'Same 10 for everyone', color: '#ffc800' },
+  room: { title: 'Room Battle', icon: 'users', desc: 'Race friends live', color: '#ff9600' },
 };
 
 export const QUIZ_LEN = 10;

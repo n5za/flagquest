@@ -11,7 +11,7 @@ function scopeFor(mode) {
 }
 
 export default function HomeScreen({ countries, go }) {
-  const { progress, settings, leaderboards, continentMastery } = useGame();
+  const { progress, settings, leaderboards, continentMastery, t } = useGame();
   const { level, pct } = levelFromXp(progress.totalXp);
   const daily = progress.daily;
   const challengeDone = daily?.date === todayKey();
@@ -30,8 +30,8 @@ export default function HomeScreen({ countries, go }) {
           <h1>FlagQuest</h1>
           <p className="dim">
             {progress.totalXp === 0
-              ? 'Master the flags of the world — one answer at a time.'
-              : `Level ${level} · ${pct}% to level ${level + 1}`}
+              ? t('Master the flags of the world — one answer at a time.')
+              : t('Level {l} · {pct}% to level {next}', { l: level, pct, next: level + 1 })}
           </p>
         </div>
       </section>
@@ -48,26 +48,49 @@ export default function HomeScreen({ countries, go }) {
           </span>
           <span className="challenge-main">
             <span className="challenge-title">
-              Daily Challenge
-              <span className="challenge-tag tag">+{CHALLENGE_BONUS} bonus XP</span>
+              {t('Daily Challenge')}
+              <span className="challenge-tag tag">{t('+{bonus} bonus XP', { bonus: CHALLENGE_BONUS })}</span>
             </span>
             <span className="challenge-desc">
               {challengeDone
-                ? `Done! ${daily.correct}/${daily.total} · +${daily.xp} XP — come back tomorrow`
-                : '10 questions · same for everyone · one shot per day'}
+                ? t('Done! {correct}/{total} · +{xp} XP — come back tomorrow', { correct: daily.correct, total: daily.total, xp: daily.xp })
+                : t('10 questions · same for everyone · one shot per day')}
             </span>
           </span>
           <span className="challenge-cta">
-            {challengeDone ? <><Icon name="check" size={14} /> Done</> : <><Icon name="play" size={14} /> Play</>}
+            {challengeDone ? <><Icon name="check" size={14} /> {t('Done')}</> : <><Icon name="play" size={14} /> {t('Play')}</>}
           </span>
         </button>
       </section>
 
       <section>
-        <h2 className="section-title">Game Modes</h2>
+        <button
+          className="card challenge-card"
+          onClick={() => go('room')}
+        >
+          <span className="challenge-emoji">
+            <Icon name="users" size={26} />
+          </span>
+          <span className="challenge-main">
+            <span className="challenge-title">
+              {t('Room Battle')}
+              <span className="challenge-tag tag">{t('Multiplayer')}</span>
+            </span>
+            <span className="challenge-desc">
+              {t('Create a room, share the code, and race your friends — live scores on the same flags.')}
+            </span>
+          </span>
+          <span className="challenge-cta">
+            <><Icon name="play" size={14} /> {t('Play')}</>
+          </span>
+        </button>
+      </section>
+
+      <section>
+        <h2 className="section-title">{t('Game Modes')}</h2>
         <div className="mode-grid">
           {Object.entries(MODES)
-            .filter(([key]) => key !== 'challenge')
+            .filter(([key]) => key !== 'challenge' && key !== 'room')
             .map(([key, m]) => {
             const best = leaderboards[key]?.[0];
             return (
@@ -80,8 +103,8 @@ export default function HomeScreen({ countries, go }) {
                 <span className="mode-icon">
                   <Icon name={m.icon} size={32} />
                 </span>
-                <span className="mode-name">{m.title}</span>
-                <span className="mode-desc">{m.desc}</span>
+                <span className="mode-name">{t(m.title)}</span>
+                <span className="mode-desc">{t(m.desc)}</span>
                 {best && <span className="mode-best"><Icon name="trophy" size={13} /> {best.score}</span>}
               </button>
             );
@@ -91,8 +114,8 @@ export default function HomeScreen({ countries, go }) {
 
       <section>
         <h2 className="section-title">
-          Learning Paths{' '}
-          {!settings.pathMode && <span className="tag tag-free">Free mode</span>}
+          {t('Learning Paths')}{' '}
+          {!settings.pathMode && <span className="tag tag-free">{t('Free mode')}</span>}
         </h2>
         <div className="path-grid">
           {[...CONTINENTS].sort((a, b) => a.order - b.order).map((cont) => {
@@ -110,7 +133,7 @@ export default function HomeScreen({ countries, go }) {
                   {locked ? <Icon name="lock" size={22} /> : <Icon name={cont.icon} size={26} />}
                 </div>
                 <div className="path-info">
-                  <span className="path-name">{cont.id}</span>
+                  <span className="path-name">{t(cont.id)}</span>
                   <div className="progress-row">
                     <div className="progress-track">
                       <div
@@ -120,10 +143,10 @@ export default function HomeScreen({ countries, go }) {
                     </div>
                     <span className="progress-pct">{Math.round(mastery * 100)}%</span>
                   </div>
-                  <span className="path-count dim">{count} countries</span>
+                  <span className="path-count dim">{t('{count} countries', { count })}</span>
                   {locked && (
                     <span className="path-lock-note">
-                      Reach {Math.round(UNLOCK_MASTERY * 100)}% in {prev.id} to unlock
+                      {t('Reach {pct}% in {name} to unlock', { pct: Math.round(UNLOCK_MASTERY * 100), name: t(prev.id) })}
                     </span>
                   )}
                 </div>
@@ -134,30 +157,30 @@ export default function HomeScreen({ countries, go }) {
       </section>
 
       <section>
-        <h2 className="section-title">Library</h2>
+        <h2 className="section-title">{t('Library')}</h2>
         <div className="nav-grid">
           <button className="card nav-card" onClick={() => go('badges')}>
             <span className="nav-icon">
               <Icon name="award" size={22} />
             </span>
-            <span className="nav-name">Badges</span>
+            <span className="nav-name">{t('Badges')}</span>
             <span className="nav-desc dim">
-              {progress.badges.length} of {BADGES.length} unlocked
+              {t('{a} of {b} unlocked', { a: progress.badges.length, b: BADGES.length })}
             </span>
           </button>
           <button className="card nav-card" onClick={() => go('leaderboard')}>
             <span className="nav-icon">
               <Icon name="trophy" size={22} />
             </span>
-            <span className="nav-name">Leaderboard</span>
-            <span className="nav-desc dim">XP World Cup · per-mode runs</span>
+            <span className="nav-name">{t('Leaderboard')}</span>
+            <span className="nav-desc dim">{t('XP World Cup · per-mode runs')}</span>
           </button>
           <button className="card nav-card" onClick={() => go('settings')}>
             <span className="nav-icon">
               <Icon name="settings" size={22} />
             </span>
-            <span className="nav-name">Settings</span>
-            <span className="nav-desc dim">Sound, theme, data</span>
+            <span className="nav-name">{t('Settings')}</span>
+            <span className="nav-desc dim">{t('Sound, theme, data')}</span>
           </button>
         </div>
       </section>

@@ -3,6 +3,7 @@ import { storageGet, storageSet } from '../lib/storage.js';
 import { sound } from '../lib/sound.js';
 import { xpForAnswer, levelFromXp, todayKey, yesterdayKey } from '../lib/gameMath.js';
 import { syncXpRun } from '../lib/supabase.js';
+import { t as i18nT, detectLang } from '../lib/i18n.js';
 import { CHALLENGE_BONUS } from '../data/modes.js';
 import { BADGE_MAP } from '../data/badges.js';
 import { CONTINENTS } from '../data/continents.js';
@@ -22,7 +23,7 @@ const DEFAULT_PROGRESS = {
   challengesDone: 0,
 };
 
-const DEFAULT_SETTINGS = { sound: true, theme: 'dark', pathMode: true };
+const DEFAULT_SETTINGS = { sound: true, theme: 'dark', pathMode: true, lang: detectLang() };
 
 const DEFAULT_LEADERBOARDS = { mc: [], type: [], match: [], timed: [], reverse: [], challenge: [] };
 
@@ -45,6 +46,16 @@ export function GameProvider({ countries, children }) {
   useEffect(() => {
     document.documentElement.dataset.theme = settings.theme;
   }, [settings.theme]);
+  useEffect(() => {
+    const lang = settings.lang === 'fr' || settings.lang === 'ar' ? settings.lang : 'en';
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+  }, [settings.lang]);
+
+  const t = useCallback(
+    (key, vars) => i18nT(settings.lang === 'fr' || settings.lang === 'ar' ? settings.lang : 'en', key, vars),
+    [settings.lang]
+  );
 
   const pushToast = useCallback((message, icon = 'party') => {
     const id = Date.now() + Math.random();
@@ -58,10 +69,14 @@ export function GameProvider({ countries, children }) {
       if (progressRef.current.badges.includes(id)) return false;
       setProgress((p) => ({ ...p, badges: [...p.badges, id] }));
       sound.badge();
-      pushToast(`Badge unlocked: ${BADGE_MAP[id].name}`, BADGE_MAP[id].icon);
+      pushToast(
+        t(`Badge unlocked: ${BADGE_MAP[id].name}`),
+        BADGE_MAP[id].icon
+      );
       return true;
     },
-    [pushToast]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [pushToast, settings.lang]
   );
 
   useEffect(() => {
@@ -115,15 +130,16 @@ export function GameProvider({ countries, children }) {
   useEffect(() => {
     const r = ensureDaily();
     if (r.changed) {
-      if (r.consumed) pushToast('Streak saved by a freeze!', 'snowflake');
-      else pushToast(`${r.streak}-day streak!`, 'flame');
+      if (r.consumed) pushToast(t('Streak saved by a freeze!'), 'snowflake');
+      else pushToast(t('{n}-day streak!', { n: r.streak }), 'flame');
     }
     const onVis = () => {
       if (document.visibilityState === 'visible') ensureDaily();
     };
     document.addEventListener('visibilitychange', onVis);
     return () => document.removeEventListener('visibilitychange', onVis);
-  }, [ensureDaily, pushToast]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ensureDaily, pushToast, settings.lang]);
 
   const recordAnswer = useCallback(
     (cca3, correct, mode, { speed = false, combo = 0 } = {}) => {
@@ -241,6 +257,8 @@ export function GameProvider({ countries, children }) {
         leaderboards,
         toasts,
         levelUp,
+        lang: settings.lang,
+        t,
         ensureDaily,
         recordAnswer,
         finishQuiz,

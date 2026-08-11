@@ -4,7 +4,7 @@ import Mascot from './Mascot.jsx';
 import { burst } from '../lib/confetti.js';
 
 export default function LevelUpModal() {
-  const { levelUp, dismissLevelUp } = useGame();
+  const { levelUp, dismissLevelUp, t } = useGame();
   useEffect(() => {
     if (levelUp) {
       burst(window.innerWidth / 2, window.innerHeight * 0.35, { count: 120, power: 7 });
@@ -13,17 +13,15 @@ export default function LevelUpModal() {
   if (!levelUp) return null;
   return (
     <div className="modal-overlay" onClick={dismissLevelUp}>
-      <div className="modal levelup-modal" role="dialog" aria-modal="true" aria-label="Level up">
+      <div className="modal levelup-modal" role="dialog" aria-modal="true" aria-label={t('Level Up!')}>
         <Mascot mood="excited" size={110} />
-        <h2>Level Up!</h2>
-        <p>
-          You reached level <strong>{levelUp.to}</strong>
-        </p>
+        <h2>{t('Level Up!')}</h2>
+        <p>{t('You reached level {to}', { to: levelUp.to })}</p>
         <p className="dim">
-          {levelUp.from} → {levelUp.to} · keep going!
+          {t('{from} → {to} · keep going!', { from: levelUp.from, to: levelUp.to })}
         </p>
-        <button className="btn btn-green" onClick={dismissLevelUp}>
-          Continue
+        <button className="btn btn-primary" onClick={dismissLevelUp}>
+          {t('Continue')}
         </button>
       </div>
     </div>

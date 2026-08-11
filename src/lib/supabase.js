@@ -47,6 +47,266 @@ export async function getMe() {
   return { id: user.id, name: savedName() || nicknameFor(user.id) };
 }
 
+export async function getAccount() {
+  if (!supabase) return null;
+  try {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (error || !session?.user) return null;
+    const isAnon = !!session.user.is_anonymous;
+    return { id: session.user.id, email: session.user.email || null, isAnon };
+  } catch {
+    return null;
+  }
+}
+
+export async function signUp(email, password) {
+  if (!supabase) return { ok: false, error: 'offline' };
+  try {
+    const current = (await supabase.auth.getSession()).data.session?.user;
+    const { data, error } = await supabase.auth.signUp({ email, password });
+    if (error) return { ok: false, error: error.message };
+    const accountId = data?.user?.id;
+    if (current && accountId && accountId !== current.id) {
+      try {
+        const token = (await supabase.auth.getSession()).data.session?.access_token;
+        await fetch('/api/link', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ anonId: current.id, accountId }),
+        });
+      } catch {
+        /* link is best-effort; retried on next sign-in */
+      }
+    }
+    return { ok: true, email: data?.user?.email || email };
+  } catch {
+    return { ok: false, error: 'network' };
+  }
+}
+
+export async function signIn(email, password) {
+  if (!supabase) return { ok: false, error: 'offline' };
+  try {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) return { ok: false, error: error.message };
+    return { ok: true, email };
+  } catch {
+    return { ok: false, error: 'network' };
+  }
+}
+
+export async function signOut() {
+  if (!supabase) return;
+  try {
+    await supabase.auth.signOut();
+  } catch {
+    /* ignore */
+  }
+}
+
+export async function resetPassword(email) {
+  if (!supabase) return { ok: false, error: 'offline' };
+  try {
+    const { error } = await supabase.auth.resetPasswordForEmail(email);
+    if (error) return { ok: false, error: error.message };
+    return { ok: true };
+  } catch {
+    return { ok: false, error: 'network' };
+  }
+}
+
+export async function setNewPassword(password) {
+  if (!supabase) return { ok: false, error: 'offline' };
+  try {
+    const { error } = await supabase.auth.updateUser({ password });
+    if (error) return { ok: false, error: error.message };
+    return { ok: true };
+  } catch {
+    return { ok: false, error: 'network' };
+  }
+}
+
+export function onAuthChange(cb) {
+  if (!supabase) return () => {};
+  const { data } = supabase.auth.onAuthStateChange((event) => cb(event));
+  return () => data?.subscription?.unsubscribe();
+}
+
+/* ---------- Room battles ---------- */
+
+export const ROOM_COUNTS = [5, 10, 15, 20];
+
+export const ROOM_MODES = ['mc', 'type', 'match', 'timed', 'reverse'];
+
+const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+
+function genCode(len = 6) {
+  let out = '';
+  for (let i = 0; i < len; i++) out += CODE_CHARS[Math.floor(Math.random() * CODE_CHARS.length)];
+  return out;
+}
+
+async function ensurePlayerRow() {
+  const user = await ensurePlayer();
+  if (!user) return null;
+  try {
+    await supabase.from('players').upsert(
+      { id: user.id, name: savedName() || nicknameFor(user.id) },
+      { onConflict: 'id' }
+    );
+  } catch {
+    /* row may already exist */
+  }
+  return user;
+}
+
+export async function createRoom({ name, questionCount, mode = 'mc', countryIds }) {
+  try {
+    const user = await ensurePlayerRow();
+    if (!user) return { ok: false, error: 'auth' };
+    const { data: room, error } = await supabase
+      .from('rooms')
+      .insert({
+        code: genCode(),
+        name: (name || '').trim() || 'Room',
+        admin_id: user.id,
+        question_count: questionCount,
+        mode,
+        questions: countryIds || [],
+      })
+      .select()
+      .single();
+    if (error) return { ok: false, error: error.message };
+    const { error: mErr } = await supabase.from('room_members').insert({
+      room_id: room.id,
+      player_id: user.id,
+      name: savedName() || nicknameFor(user.id),
+    });
+    if (mErr) return { ok: false, error: mErr.message };
+    return { ok: true, room };
+  } catch {
+    return { ok: false, error: 'network' };
+  }
+}
+
+export async function joinRoom(code) {
+  try {
+    const clean = String(code || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+    if (clean.length < 4) return { ok: false, error: 'code' };
+    const { data: room, error } = await supabase
+      .from('rooms')
+      .select('*')
+      .eq('code', clean)
+      .maybeSingle();
+    if (error) return { ok: false, error: error.message };
+    if (!room) return { ok: false, error: 'notfound' };
+    const user = await ensurePlayerRow();
+    if (!user) return { ok: false, error: 'auth' };
+    const { error: mErr } = await supabase.from('room_members').upsert(
+      { room_id: room.id, player_id: user.id, name: savedName() || nicknameFor(user.id) },
+      { onConflict: 'room_id,player_id' }
+    );
+    if (mErr) return { ok: false, error: mErr.message };
+    return { ok: true, room };
+  } catch {
+    return { ok: false, error: 'network' };
+  }
+}
+
+export async function getRoomById(id) {
+  try {
+    const { data, error } = await supabase.from('rooms').select('*').eq('id', id).maybeSingle();
+    if (error || !data) return null;
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+export async function joinRoomById(roomId) {
+  try {
+    const user = await ensurePlayerRow();
+    if (!user) return { ok: false, error: 'auth' };
+    const { error } = await supabase.from('room_members').upsert(
+      { room_id: roomId, player_id: user.id, name: savedName() || nicknameFor(user.id) },
+      { onConflict: 'room_id,player_id' }
+    );
+    if (error) return { ok: false, error: error.message };
+    const room = await getRoomById(roomId);
+    if (!room) return { ok: false, error: 'notfound' };
+    return { ok: true, room };
+  } catch {
+    return { ok: false, error: 'network' };
+  }
+}
+
+export async function updateRoom(id, patch) {
+  try {
+    const { error } = await supabase.from('rooms').update(patch).eq('id', id);
+    return { ok: !error, error: error?.message };
+  } catch {
+    return { ok: false, error: 'network' };
+  }
+}
+
+export async function startRoom(roomId, questionCount, mode, countries) {
+  const pool = (countries || []).slice();
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  const ids = pool.slice(0, questionCount).map((c) => c.id);
+  return updateRoom(roomId, { status: 'playing', questions: ids, mode: ROOM_MODES.includes(mode) ? mode : 'mc' });
+}
+
+export async function setRoomScore(roomId, { score, correct, done = false }) {
+  try {
+    const user = await ensurePlayer();
+    if (!user) return;
+    await supabase
+      .from('room_members')
+      .update({ score, correct, done })
+      .eq('room_id', roomId)
+      .eq('player_id', user.id);
+  } catch {
+    /* silent — offline */
+  }
+}
+
+export async function resetRound(roomId) {
+  try {
+    await supabase
+      .from('room_members')
+      .update({ done: false, score: 0, correct: 0 })
+      .eq('room_id', roomId);
+  } catch {
+    /* silent */
+  }
+}
+
+export function subscribeRoom(roomId, onChange) {
+  if (!supabase) return () => {};
+  const channel = supabase
+    .channel(`room-${roomId}`)
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'room_members', filter: `room_id=eq.${roomId}` },
+      (payload) => onChange('member', payload.new)
+    )
+    .on(
+      'postgres_changes',
+      { event: 'UPDATE', schema: 'public', table: 'rooms', filter: `id=eq.${roomId}` },
+      (payload) => onChange('room', payload.new)
+    )
+    .subscribe();
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}
+
 export async function updateNickname(raw) {
   const name = (raw || '').trim().replace(/\s+/g, ' ');
   if (name.length < 3 || name.length > 24) return { ok: false, reason: 'length' };

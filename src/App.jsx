@@ -10,11 +10,17 @@ import ResultsScreen from './components/ResultsScreen.jsx';
 import BadgesScreen from './components/BadgesScreen.jsx';
 import LeaderboardScreen from './components/LeaderboardScreen.jsx';
 import SettingsScreen from './components/SettingsScreen.jsx';
+import AuthScreen from './components/AuthScreen.jsx';
+import RoomScreen from './components/RoomScreen.jsx';
+import RoomSettingsScreen from './components/RoomSettingsScreen.jsx';
+import RoomQuizScreen from './components/RoomQuizScreen.jsx';
+import RoomResultsScreen from './components/RoomResultsScreen.jsx';
 import LoadingScreen from './components/LoadingScreen.jsx';
 import ErrorScreen from './components/ErrorScreen.jsx';
 import Toasts from './components/Toasts.jsx';
 import LevelUpModal from './components/LevelUpModal.jsx';
 import LandingPage from './components/LandingPage.jsx';
+import { onAuthChange } from './lib/supabase.js';
 
 const isAppPath = () => window.location.pathname === '/app' || window.location.pathname.startsWith('/app/');
 
@@ -24,7 +30,13 @@ export default function App() {
 
   const [isApp] = useState(isAppPath);
 
-  if (!isApp) return <LandingPage />;
+  if (!isApp) {
+    return (
+      <GameProvider countries={[]}>
+        <LandingPage />
+      </GameProvider>
+    );
+  }
 
   const load = useCallback(async (force = false) => {
     setData((d) => ({ ...d, status: 'loading' }));
@@ -43,6 +55,21 @@ export default function App() {
   const go = useCallback((name, params = {}) => {
     setScreen({ name, params });
     window.scrollTo({ top: 0, behavior: 'instant' });
+  }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const roomCode = params.get('room');
+    if (roomCode) {
+      window.history.replaceState({}, '', window.location.pathname);
+      setScreen({ name: 'room', params: { join: roomCode } });
+    }
+    const off = onAuthChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setScreen({ name: 'auth', params: { mode: 'new-password' } });
+      }
+    });
+    return off;
   }, []);
 
   const ready = data.status === 'ready';
@@ -86,6 +113,40 @@ export default function App() {
             {screen.name === 'badges' && <BadgesScreen go={go} />}
             {screen.name === 'leaderboard' && <LeaderboardScreen go={go} />}
             {screen.name === 'settings' && <SettingsScreen go={go} />}
+            {screen.name === 'auth' && <AuthScreen go={go} mode={screen.params.mode} />}
+            {screen.name === 'room' && (
+              <RoomScreen
+                key={screen.params.join || screen.params.roomId || 'lobby'}
+                countries={data.countries}
+                joinCode={screen.params.join}
+                roomId={screen.params.roomId}
+                go={go}
+              />
+            )}
+            {screen.name === 'room-settings' && (
+              <RoomSettingsScreen
+                key={screen.params.roomId}
+                roomId={screen.params.roomId}
+                countries={data.countries}
+                go={go}
+              />
+            )}
+            {screen.name === 'room-quiz' && (
+              <RoomQuizScreen
+                key={screen.params.roomId}
+                roomId={screen.params.roomId}
+                countries={data.countries}
+                go={go}
+              />
+            )}
+            {screen.name === 'room-results' && (
+              <RoomResultsScreen
+                key={screen.params.roomId}
+                roomId={screen.params.roomId}
+                countries={data.countries}
+                go={go}
+              />
+            )}
           </main>
         )}
         <Toasts />
