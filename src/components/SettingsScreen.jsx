@@ -109,7 +109,7 @@ export default function SettingsScreen({ go }) {
               <button type="button" className="icon-btn" aria-label={t('Cancel')} onClick={() => setEditingName(false)}><Icon name="x" size={18} /></button>
             </form>
           ) : (
-            <button className="btn btn-small" onClick={() => { setNameDraft(me?.name || ''); setNameMsg(null); setEditingName(true); }}>
+            <button className="btn btn-small btn-green" onClick={() => { setNameDraft(me?.name || ''); setNameMsg(null); setEditingName(true); }}>
               <Icon name="pencil" size={14} /> {t('Change')}
             </button>
           )}
@@ -129,7 +129,7 @@ export default function SettingsScreen({ go }) {
             </div>
           </div>
           {account?.isAnon || !account ? (
-            <button className="btn btn-small" onClick={() => go('auth')}>
+            <button className="btn btn-small btn-green" onClick={() => go('auth')}>
               <Icon name="login" size={14} /> {t('Sign in / Sign up')}
             </button>
           ) : (

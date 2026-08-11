@@ -2160,6 +2160,19 @@ img {
   font-weight: 700;
 }
 
+/* Nav Card Small Modifiers */
+.nav-card-small {
+  flex-direction: row !important;
+  align-items: center !important;
+  padding: 10px 12px !important;
+  gap: 12px !important;
+}
+.nav-icon-small {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 8px !important;
+}
+
 .auth-switch {
   text-align: center;
   font-size: 14px;

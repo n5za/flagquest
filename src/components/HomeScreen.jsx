@@ -37,6 +37,35 @@ export default function HomeScreen({ countries, go }) {
       </section>
 
       <section>
+        <div className="nav-grid">
+          <button className="card nav-card nav-card-small" onClick={() => go('badges')}>
+            <span className="nav-icon nav-icon-small">
+              <Icon name="award" size={16} />
+            </span>
+            <div>
+              <span className="nav-name">{t('Badges')}</span>
+            </div>
+          </button>
+          <button className="card nav-card nav-card-small" onClick={() => go('leaderboard')}>
+            <span className="nav-icon nav-icon-small">
+              <Icon name="trophy" size={16} />
+            </span>
+            <div>
+              <span className="nav-name">{t('Leaderboard')}</span>
+            </div>
+          </button>
+          <button className="card nav-card nav-card-small" onClick={() => go('settings')}>
+            <span className="nav-icon nav-icon-small">
+              <Icon name="settings" size={16} />
+            </span>
+            <div>
+              <span className="nav-name">{t('Settings')}</span>
+            </div>
+          </button>
+        </div>
+      </section>
+
+      <section>
         <button
           className={`card challenge-card ${challengeDone ? 'done' : ''}`}
           onClick={() =>
@@ -153,35 +182,6 @@ export default function HomeScreen({ countries, go }) {
               </button>
             );
           })}
-        </div>
-      </section>
-
-      <section>
-        <h2 className="section-title">{t('Library')}</h2>
-        <div className="nav-grid">
-          <button className="card nav-card" onClick={() => go('badges')}>
-            <span className="nav-icon">
-              <Icon name="award" size={22} />
-            </span>
-            <span className="nav-name">{t('Badges')}</span>
-            <span className="nav-desc dim">
-              {t('{a} of {b} unlocked', { a: progress.badges.length, b: BADGES.length })}
-            </span>
-          </button>
-          <button className="card nav-card" onClick={() => go('leaderboard')}>
-            <span className="nav-icon">
-              <Icon name="trophy" size={22} />
-            </span>
-            <span className="nav-name">{t('Leaderboard')}</span>
-            <span className="nav-desc dim">{t('XP World Cup · per-mode runs')}</span>
-          </button>
-          <button className="card nav-card" onClick={() => go('settings')}>
-            <span className="nav-icon">
-              <Icon name="settings" size={22} />
-            </span>
-            <span className="nav-name">{t('Settings')}</span>
-            <span className="nav-desc dim">{t('Sound, theme, data')}</span>
-          </button>
         </div>
       </section>
     </div>

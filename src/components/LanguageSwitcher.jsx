@@ -1,9 +1,9 @@
 import { useGame } from '../state/GameContext.jsx';
 
 const LANGS = [
-  { code: 'en', label: 'English', flag: '🇬🇧' },
-  { code: 'fr', label: 'Français', flag: '🇫🇷' },
-  { code: 'ar', label: 'العربية', flag: '🇲🇦' }
+  { code: 'en', label: 'English' },
+  { code: 'fr', label: 'Français' },
+  { code: 'ar', label: 'العربية' }
 ];
 
 export default function LanguageSwitcher({ compact = false }) {
@@ -17,8 +17,7 @@ export default function LanguageSwitcher({ compact = false }) {
           onClick={() => setSetting('lang', l.code)}
           aria-pressed={settings.lang === l.code}
         >
-          <span className="lang-flag">{l.flag}</span>
-          {!compact && <span className="lang-label">{l.label}</span>}
+          <span className="lang-label">{compact ? l.code.toUpperCase() : l.label}</span>
         </button>
       ))}
     </div>
