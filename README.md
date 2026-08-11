@@ -1,4 +1,4 @@
-# FlagQuest 🌍
+# FlagQuest 🌍 BY Nasa
 
 A Duolingo-style, fully client-side web app for mastering world flags, capitals and countries. No backend, no account, no install — just open the page, play, and learn.
 
