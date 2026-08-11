@@ -47,12 +47,11 @@ export default function RoomQuizScreen({ roomId, countries, go }) {
   const isReverse = mode === 'reverse';
   const roomSettings = room?.settings || {};
   const timedSeconds = roomSettings.timed?.seconds || TIMED_SECONDS;
-  const matchPairs = Math.min(roomSettings.match?.pairs || MATCH_PAIRS, qCountries.length || MATCH_PAIRS);
-  const strict = !!roomSettings.type?.strict || !!roomSettings.reverse?.strict;
-
   const qCountries = (room?.questions || [])
     .map((id) => countries.find((c) => c.id === id))
     .filter(Boolean);
+  const matchPairs = Math.min(roomSettings.match?.pairs || MATCH_PAIRS, qCountries.length || MATCH_PAIRS);
+  const strict = !!roomSettings.type?.strict || !!roomSettings.reverse?.strict;
 
   const pushScore = (extra = {}) => {
     setRoomScore(roomId, {
