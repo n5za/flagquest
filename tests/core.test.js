@@ -156,6 +156,21 @@ test('match picks only countries with capitals, unique', () => {
   assert.equal(new Set(six.map((c) => c.id)).size, 6);
 });
 
+test('match avoids countries whose capital repeats the country name', () => {
+  const countries = [
+    mk('Nigeria', { id: 'NGA' }),
+    mk('Ghana', { id: 'GHA' }),
+    mk('Togo', { id: 'TGO' }),
+    mk('Benin', { id: 'BEN' }),
+    mk('Kenya', { id: 'KEN' }),
+    mk('Egypt', { id: 'EGY' }),
+    mk('Gibraltar', { id: 'GIB', cap: 'Gibraltar' }),
+  ];
+  const picked = pickMatchCountries({ type: 'free' }, countries, {}, 6, mulberry32(1));
+  assert.equal(picked.length, 6);
+  assert.ok(!picked.some((c) => c.name === c.capital));
+});
+
 test('mulberry32 is deterministic per seed and differs between seeds', () => {
   const a = mulberry32(42);
   const b = mulberry32(42);

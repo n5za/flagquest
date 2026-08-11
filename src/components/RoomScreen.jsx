@@ -11,6 +11,7 @@ import {
   joinRoomById,
   subscribeRoom,
   ensurePlayer,
+  startRoom,
   supabase,
 } from '../lib/supabase.js';
 
@@ -120,7 +121,7 @@ export default function RoomScreen({ go, countries, joinCode, roomId }) {
     });
     busyRef.current = false;
     setBusy(false);
-    if (res.ok) setRoom(res.room);
+    if (res.ok) go('room', { roomId: res.room.id });
     else pushToast(t('Could not create the room.'));
   };
 
@@ -130,7 +131,7 @@ export default function RoomScreen({ go, countries, joinCode, roomId }) {
     setBusy(true);
     const res = await joinRoom(codeInput);
     setBusy(false);
-    if (res.ok) setRoom(res.room);
+    if (res.ok) go('room', { roomId: res.room.id });
     else if (res.error === 'notfound') pushToast(t('No room with that code.'));
     else if (res.error === 'finished') pushToast(t('That room already finished.'));
     else pushToast(t('Could not join the room.'));
@@ -160,6 +161,16 @@ export default function RoomScreen({ go, countries, joinCode, roomId }) {
 
   const isAdmin = myId && room?.admin_id === myId;
   const me = members.find((m) => m.player_id === myId);
+
+  const start = async () => {
+    if (busyRef.current) return;
+    busyRef.current = true;
+    setBusy(true);
+    const res = await startRoom(room.id, room.question_count, room.mode, countries);
+    busyRef.current = false;
+    setBusy(false);
+    if (!res.ok) pushToast(t('Could not start the game.'));
+  };
 
   if (!room) {
     return (
@@ -295,9 +306,18 @@ export default function RoomScreen({ go, countries, joinCode, roomId }) {
       </div>
 
       {isAdmin && (
-        <button className="btn btn-ghost btn-lg" onClick={() => go('room-settings', { roomId: room.id })}>
-          <Icon name="settings" size={18} /> {t('Room settings')}
-        </button>
+        <div className="admin-actions">
+          <button
+            className="btn btn-primary btn-lg"
+            onClick={start}
+            disabled={busy || room.status !== 'lobby'}
+          >
+            <Icon name="play" size={18} /> {busy ? t('Starting…') : t('Start game')}
+          </button>
+          <button className="btn btn-ghost btn-lg" onClick={() => go('room-settings', { roomId: room.id })}>
+            <Icon name="settings" size={18} /> {t('Room settings')}
+          </button>
+        </div>
       )}
 
       {!isAdmin && room.status === 'lobby' && (

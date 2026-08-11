@@ -38,6 +38,20 @@ export default function TopBar({ go }) {
         >
           {settings.sound ? <Icon name="volume2" size={19} /> : <Icon name="volumeX" size={19} />}
         </button>
+        <button
+          className="icon-btn"
+          onClick={() => go('settings')}
+          aria-label={t('Settings')}
+        >
+          <Icon name="gear" size={19} />
+        </button>
+        <button
+          className="icon-btn"
+          onClick={() => go('leaderboard')}
+          aria-label={t('Leaderboard')}
+        >
+          <Icon name="trophy" size={19} />
+        </button>
       </div>
     </header>
   );

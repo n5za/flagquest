@@ -200,7 +200,7 @@ export default function RoomQuizScreen({ roomId, countries, go }) {
 
   const answer = (choice) => {
     if (phase !== 'answer' || !choice) return;
-    const ok = choice.cca2 === q.cca2;
+    const ok = choice.id === q.id;
     if (ok) correct(choice);
     else wrong(choice);
   };
@@ -208,13 +208,12 @@ export default function RoomQuizScreen({ roomId, countries, go }) {
   const submitType = (e) => {
     e.preventDefault();
     if (phase !== 'answer' || !input.trim()) return;
-    const ok = checkAnswer(q.correct, input, strict ? { strict: true } : undefined);
-    const lenient = !ok && !strict && checkAnswer(q.correct, input, { lenient: true });
+    const ok = checkAnswer(q, input, strict ? { strict: true } : undefined);
+    const lenient = !ok && !strict && checkAnswer(q, input, { lenient: true });
     if (ok || lenient) {
       correct(q);
     } else {
-      wrong(q);
-      setPicked(null);
+      wrong({ id: 'wrong-answer' });
     }
   };
 
@@ -356,13 +355,13 @@ export default function RoomQuizScreen({ roomId, countries, go }) {
                 {options.map((c) => {
                   let cls = 'option';
                   if (picked) {
-                    if (c.cca2 === q.cca2) cls += ' correct';
-                    else if (c.cca2 === picked.cca2) cls += ' wrong';
+                    if (c.id === q.id) cls += ' correct';
+                    else if (c.id === picked.id) cls += ' wrong';
                     else cls += ' dimmed';
                   }
                   return (
                     <button
-                      key={c.cca2}
+                      key={c.id}
                       className={cls}
                       disabled={!!picked}
                       onClick={() => answer(c)}
@@ -379,8 +378,8 @@ export default function RoomQuizScreen({ roomId, countries, go }) {
             )}
 
             {phase === 'feedback' && (
-              <div className={`feedback-overlay ${picked?.cca2 === q.cca2 ? 'ok' : 'no'}`}>
-                <h2>{picked?.cca2 === q.cca2 ? t('Correct!') : t("It's {name}", { name: q.name })}</h2>
+              <div className={`feedback-overlay ${picked?.id === q.id ? 'ok' : 'no'}`}>
+                <h2>{picked?.id === q.id ? t('Correct!') : t("It's {name}", { name: q.name })}</h2>
                 <button className="btn btn-primary btn-lg" onClick={next}>
                   {qIdx + 1 < totalQs ? t('Next') : t('Finish')}
                 </button>

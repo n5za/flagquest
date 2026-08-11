@@ -103,7 +103,7 @@ export function buildDailyChallenge(countries, dateKey, states = {}) {
 }
 
 export function pickMatchCountries(scope, countries, states = {}, n = 6, rng = Math.random) {
-  const pool = scopePool(scope, countries, states).filter((c) => c.capital);
+  const pool = scopePool(scope, countries, states).filter((c) => c.capital && c.capital !== c.name);
   const weights = pool.map((c) => stateWeight((states[c.id] || {}).s || 'new'));
   return weightedPick(pool, weights, Math.min(n, pool.length), rng);
 }

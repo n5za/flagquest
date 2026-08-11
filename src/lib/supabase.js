@@ -288,7 +288,10 @@ export async function updateRoom(id, patch) {
 }
 
 export async function startRoom(roomId, questionCount, mode, countries, settings = {}) {
-  const pool = (countries || []).slice();
+  const playable = mode === 'match'
+    ? (countries || []).filter((c) => c.capital && c.capital !== c.name)
+    : (countries || []);
+  const pool = playable.slice();
   for (let i = pool.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [pool[i], pool[j]] = [pool[j], pool[i]];
@@ -365,6 +368,13 @@ export async function updateNickname(raw) {
     return { ok: true, name };
   } catch {
     return { ok: true, name, offline: true };
+  } finally {
+    supabase
+      .from('room_members')
+      .update({ name })
+      .eq('player_id', user.id)
+      .then(() => {})
+      .catch(() => {});
   }
 }
 

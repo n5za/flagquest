@@ -129,6 +129,7 @@ export default function MatchScreen({ scope, countries, go }) {
               key={c.id}
               className={`pair ${matched.has(c.id) ? 'matched' : ''} ${bad?.cap === c.id ? 'bad' : ''}`}
               onClick={() => clickCap(c)}
+              aria-label={t('Capital {name}', { name: c.capital })}
             >
               <span className="pair-cap">{c.capital}</span>
             </button>
