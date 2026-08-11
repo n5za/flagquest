@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useGame } from '../state/GameContext.jsx';
 import Icon from './Icon.jsx';
+import ModeSettingsEditor from './ModeSettingsEditor.jsx';
 import { MODES } from '../data/modes.js';
 import {
   ROOM_COUNTS,
@@ -180,13 +181,31 @@ export default function RoomSettingsScreen({ roomId, countries, go }) {
               disabled={room.status === 'playing'}
               onClick={async () => {
                 const res = await updateRoom(room.id, { mode: k });
-                if (!res.ok) pushToast(t('Could not update.'));
+                if (res.ok) {
+                  setRoom((prev) => ({ ...prev, mode: k }));
+                  pushToast(t('Saved!'));
+                } else {
+                  pushToast(t('Could not update.'));
+                }
               }}
             >
               <Icon name={MODES[k].icon} size={16} /> {t(MODES[k].title)}
             </button>
           ))}
         </div>
+        <ModeSettingsEditor
+          mode={room.mode || 'mc'}
+          settings={room.settings || {}}
+          onChange={async (next) => {
+            const res = await updateRoom(room.id, { settings: next });
+            if (res.ok) {
+              setRoom((prev) => ({ ...prev, settings: next }));
+              pushToast(t('Saved!'));
+            } else {
+              pushToast(t('Could not update.'));
+            }
+          }}
+        />
       </div>
 
       {room.status === 'finished' && (

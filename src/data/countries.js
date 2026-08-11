@@ -40,8 +40,8 @@ export function toGameCountry(raw) {
   };
 }
 
-export function checkAnswer(country, input, { lenient = false } = {}) {
+export function checkAnswer(country, input, { lenient = false, strict = false } = {}) {
   const targets = [country.name, ...country.aliases];
-  if (targets.some((t) => closeEnough(input, t, { lenient }))) return true;
-  return closeEnough(input, country.official, { lenient });
+  if (targets.some((t) => closeEnough(input, t, { lenient, strict }))) return true;
+  return closeEnough(input, country.official, { lenient, strict });
 }

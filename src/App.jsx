@@ -24,9 +24,118 @@ import { onAuthChange } from './lib/supabase.js';
 
 const isAppPath = () => window.location.pathname === '/app' || window.location.pathname.startsWith('/app/');
 
+const RUN_KEY_PREFIX = 'fq_run_';
+
+function saveRun(runId, params) {
+  try {
+    sessionStorage.setItem(RUN_KEY_PREFIX + runId, JSON.stringify(params));
+  } catch {
+    /* storage unavailable */
+  }
+}
+
+function loadRun(runId) {
+  try {
+    const raw = sessionStorage.getItem(RUN_KEY_PREFIX + runId);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function buildHash(name, params = {}) {
+  const p = params || {};
+  switch (name) {
+    case 'home':
+      return '#/';
+    case 'path':
+      return `#/path/${encodeURIComponent(p.continentId ?? '')}`;
+    case 'quiz': {
+      const scope = p.scope || {};
+      const s = scope.type === 'continent' || scope.type === 'country'
+        ? `/${scope.type}/${encodeURIComponent(scope.id ?? '')}`
+        : `/${scope.type || 'all'}`;
+      return `#/quiz/${encodeURIComponent(p.mode ?? 'mc')}${s}`;
+    }
+    case 'match': {
+      const scope = p.scope || {};
+      const s = scope.type === 'continent' || scope.type === 'country'
+        ? `/${scope.type}/${encodeURIComponent(scope.id ?? '')}`
+        : `/${scope.type || 'all'}`;
+      return `#/match${s}`;
+    }
+    case 'results': {
+      const runId = p.runId || Math.random().toString(36).slice(2, 10);
+      saveRun(runId, p);
+      return `#/results/${runId}`;
+    }
+    case 'badges':
+      return '#/badges';
+    case 'leaderboard':
+      return '#/leaderboard';
+    case 'settings':
+      return '#/settings';
+    case 'auth':
+      return p.mode === 'new-password' ? '#/auth/new-password' : '#/auth';
+    case 'room':
+      if (p.join) return `#/room/join/${encodeURIComponent(p.join)}`;
+      if (p.roomId) return `#/room/${encodeURIComponent(p.roomId)}`;
+      return '#/room';
+    case 'room-settings':
+      return `#/room/${encodeURIComponent(p.roomId ?? '')}/settings`;
+    case 'room-quiz':
+      return `#/room/${encodeURIComponent(p.roomId ?? '')}/play`;
+    case 'room-results':
+      return `#/room/${encodeURIComponent(p.roomId ?? '')}/results`;
+    default:
+      return '#/';
+  }
+}
+
+function parseHash() {
+  const raw = window.location.hash.replace(/^#\/?/, '');
+  const seg = raw.split('/').filter(Boolean).map((s) => decodeURIComponent(s));
+  if (seg.length === 0) return { name: 'home', params: {} };
+  switch (seg[0]) {
+    case 'path':
+      return { name: 'path', params: { continentId: seg[1] || '' } };
+    case 'quiz': {
+      const mode = seg[1] || 'mc';
+      const stype = seg[2] || 'all';
+      const params = { mode, scope: stype === 'continent' || stype === 'country' ? { type: stype, id: seg[3] || '' } : { type: stype } };
+      return { name: 'quiz', params };
+    }
+    case 'match': {
+      const stype = seg[1] || 'all';
+      const params = { scope: stype === 'continent' || stype === 'country' ? { type: stype, id: seg[2] || '' } : { type: stype } };
+      return { name: 'match', params };
+    }
+    case 'results':
+      return { name: 'results', params: { runId: seg[1] || '', saved: loadRun(seg[1] || '') } };
+    case 'badges':
+      return { name: 'badges', params: {} };
+    case 'leaderboard':
+      return { name: 'leaderboard', params: {} };
+    case 'settings':
+      return { name: 'settings', params: {} };
+    case 'auth':
+      return { name: 'auth', params: { mode: seg[1] === 'new-password' ? 'new-password' : undefined } };
+    case 'room':
+      if (seg[1] === 'join') return { name: 'room', params: { join: seg[2] || '' } };
+      if (seg[1] === 'settings') return { name: 'room-settings', params: { roomId: seg[1] } };
+      if (seg.length === 3 && seg[2] === 'settings') return { name: 'room-settings', params: { roomId: seg[1] } };
+      if (seg.length === 3 && seg[2] === 'play') return { name: 'room-quiz', params: { roomId: seg[1] } };
+      if (seg.length === 3 && seg[2] === 'results') return { name: 'room-results', params: { roomId: seg[1] } };
+      if (seg.length === 2) return { name: 'room', params: { roomId: seg[1] } };
+      return { name: 'room', params: {} };
+    default:
+      return { name: 'home', params: {} };
+  }
+}
+
 export default function App() {
   const [data, setData] = useState({ status: 'loading', countries: [] });
-  const [screen, setScreen] = useState({ name: 'home', params: {} });
+  const [screen, setScreen] = useState(() => parseHash());
 
   const [isApp] = useState(isAppPath);
 
@@ -53,8 +162,20 @@ export default function App() {
   }, [load]);
 
   const go = useCallback((name, params = {}) => {
-    setScreen({ name, params });
-    window.scrollTo({ top: 0, behavior: 'instant' });
+    const next = buildHash(name, params);
+    if (window.location.hash === next) {
+      setScreen(parseHash());
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    } else {
+      window.location.hash = next;
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+  }, []);
+
+  useEffect(() => {
+    const onHash = () => setScreen(parseHash());
+    window.addEventListener('hashchange', onHash);
+    return () => window.removeEventListener('hashchange', onHash);
   }, []);
 
   useEffect(() => {
@@ -62,17 +183,31 @@ export default function App() {
     const roomCode = params.get('room');
     if (roomCode) {
       window.history.replaceState({}, '', window.location.pathname);
-      setScreen({ name: 'room', params: { join: roomCode } });
+      window.location.hash = `#/room/join/${encodeURIComponent(roomCode)}`;
     }
     const off = onAuthChange((event) => {
       if (event === 'PASSWORD_RECOVERY') {
-        setScreen({ name: 'auth', params: { mode: 'new-password' } });
+        go('auth', { mode: 'new-password' });
       }
     });
     return off;
-  }, []);
+  }, [go]);
 
   const ready = data.status === 'ready';
+
+  const quizScreen = screen.name === 'quiz' && (
+    <QuizScreen
+      key={`${screen.params.mode}-${screen.params.scope?.type}-${screen.params.scope?.id ?? ''}`}
+      countries={data.countries}
+      mode={screen.params.mode}
+      scope={screen.params.scope}
+      go={go}
+    />
+  );
+
+  const resultsScreen = screen.name === 'results' && screen.params.saved && (
+    <ResultsScreen params={screen.params.saved} go={go} />
+  );
 
   return (
     <GameProvider countries={ready ? data.countries : []}>
@@ -92,15 +227,7 @@ export default function App() {
                 go={go}
               />
             )}
-            {screen.name === 'quiz' && (
-              <QuizScreen
-                key={`${screen.params.mode}-${screen.params.scope?.type}-${screen.params.scope?.id ?? ''}`}
-                countries={data.countries}
-                mode={screen.params.mode}
-                scope={screen.params.scope}
-                go={go}
-              />
-            )}
+            {quizScreen}
             {screen.name === 'match' && (
               <MatchScreen
                 key={`match-${screen.params.scope?.type}-${screen.params.scope?.id ?? ''}`}
@@ -109,7 +236,7 @@ export default function App() {
                 go={go}
               />
             )}
-            {screen.name === 'results' && <ResultsScreen params={screen.params} go={go} />}
+            {resultsScreen}
             {screen.name === 'badges' && <BadgesScreen go={go} />}
             {screen.name === 'leaderboard' && <LeaderboardScreen go={go} />}
             {screen.name === 'settings' && <SettingsScreen go={go} />}

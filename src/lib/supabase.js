@@ -149,6 +149,36 @@ function genCode(len = 6) {
   return out;
 }
 
+let modeColumnChecked = false;
+let modeColumnExists = true;
+
+async function roomModeSupported() {
+  if (modeColumnChecked) return modeColumnExists;
+  try {
+    const { error } = await supabase.from('rooms').select('mode').limit(1);
+    modeColumnExists = !error;
+  } catch {
+    modeColumnExists = true;
+  }
+  modeColumnChecked = true;
+  return modeColumnExists;
+}
+
+let settingsColumnChecked = false;
+let settingsColumnExists = true;
+
+async function roomSettingsSupported() {
+  if (settingsColumnChecked) return settingsColumnExists;
+  try {
+    const { error } = await supabase.from('rooms').select('settings').limit(1);
+    settingsColumnExists = !error;
+  } catch {
+    settingsColumnExists = true;
+  }
+  settingsColumnChecked = true;
+  return settingsColumnExists;
+}
+
 async function ensurePlayerRow() {
   const user = await ensurePlayer();
   if (!user) return null;
@@ -163,20 +193,22 @@ async function ensurePlayerRow() {
   return user;
 }
 
-export async function createRoom({ name, questionCount, mode = 'mc', countryIds }) {
+export async function createRoom({ name, questionCount, mode = 'mc', countryIds, settings = {} }) {
   try {
     const user = await ensurePlayerRow();
     if (!user) return { ok: false, error: 'auth' };
+    const payload = {
+      code: genCode(),
+      name: (name || '').trim() || 'Room',
+      admin_id: user.id,
+      question_count: questionCount,
+      questions: countryIds || [],
+    };
+    if (await roomModeSupported()) payload.mode = mode;
+    if (await roomSettingsSupported()) payload.settings = settings || {};
     const { data: room, error } = await supabase
       .from('rooms')
-      .insert({
-        code: genCode(),
-        name: (name || '').trim() || 'Room',
-        admin_id: user.id,
-        question_count: questionCount,
-        mode,
-        questions: countryIds || [],
-      })
+      .insert(payload)
       .select()
       .single();
     if (error) return { ok: false, error: error.message };
@@ -245,21 +277,26 @@ export async function joinRoomById(roomId) {
 
 export async function updateRoom(id, patch) {
   try {
-    const { error } = await supabase.from('rooms').update(patch).eq('id', id);
+    const clean = { ...patch };
+    if ('mode' in clean && !(await roomModeSupported())) delete clean.mode;
+    if ('settings' in clean && !(await roomSettingsSupported())) delete clean.settings;
+    const { error } = await supabase.from('rooms').update(clean).eq('id', id);
     return { ok: !error, error: error?.message };
   } catch {
     return { ok: false, error: 'network' };
   }
 }
 
-export async function startRoom(roomId, questionCount, mode, countries) {
+export async function startRoom(roomId, questionCount, mode, countries, settings = {}) {
   const pool = (countries || []).slice();
   for (let i = pool.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [pool[i], pool[j]] = [pool[j], pool[i]];
   }
   const ids = pool.slice(0, questionCount).map((c) => c.id);
-  return updateRoom(roomId, { status: 'playing', questions: ids, mode: ROOM_MODES.includes(mode) ? mode : 'mc' });
+  const patch = { status: 'playing', questions: ids, mode: ROOM_MODES.includes(mode) ? mode : 'mc' };
+  if (settings && Object.keys(settings).length > 0) patch.settings = settings;
+  return updateRoom(roomId, patch);
 }
 
 export async function setRoomScore(roomId, { score, correct, done = false }) {

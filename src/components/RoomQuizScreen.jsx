@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useGame } from '../state/GameContext.jsx';
 import Icon from './Icon.jsx';
 import { checkAnswer } from '../data/countries.js';
-import { TIMED_SECONDS } from '../data/modes.js';
+import { TIMED_SECONDS, MATCH_PAIRS } from '../data/modes.js';
 import { getRoomById, setRoomScore, subscribeRoom, ensurePlayer, supabase } from '../lib/supabase.js';
 
 function shuffle(a) {
@@ -45,6 +45,10 @@ export default function RoomQuizScreen({ roomId, countries, go }) {
   const isTimed = mode === 'timed';
   const isType = mode === 'type';
   const isReverse = mode === 'reverse';
+  const roomSettings = room?.settings || {};
+  const timedSeconds = roomSettings.timed?.seconds || TIMED_SECONDS;
+  const matchPairs = Math.min(roomSettings.match?.pairs || MATCH_PAIRS, qCountries.length || MATCH_PAIRS);
+  const strict = !!roomSettings.type?.strict || !!roomSettings.reverse?.strict;
 
   const qCountries = (room?.questions || [])
     .map((id) => countries.find((c) => c.id === id))
@@ -77,13 +81,14 @@ export default function RoomQuizScreen({ roomId, countries, go }) {
 
   useEffect(() => {
     if (!isMatch || !qCountries.length) return;
-    setFlags(shuffle(qCountries));
-    setCaps(shuffle(qCountries));
+    const pairs = Math.max(2, Math.min(matchPairs, qCountries.length));
+    setFlags(shuffle(qCountries.slice(0, pairs)));
+    setCaps(shuffle(qCountries.slice(0, pairs)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [room?.id, mode]);
 
   useEffect(() => {
-    if (isMatch && matched.size > 0 && matched.size === qCountries.length) {
+    if (isMatch && matched.size > 0 && matched.size === flags.length) {
       const tm = setTimeout(() => {
         scoreRef.current = matched.size * 10;
         correctRef.current = matched.size;
@@ -94,7 +99,7 @@ export default function RoomQuizScreen({ roomId, countries, go }) {
       return () => clearTimeout(tm);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [matched.size, isMatch, qCountries.length]);
+  }, [matched.size, isMatch, flags.length]);
 
   useEffect(() => {
     if (!isTimed || timeLeft == null) return;
@@ -108,7 +113,7 @@ export default function RoomQuizScreen({ roomId, countries, go }) {
   }, [isTimed, timeLeft]);
 
   useEffect(() => {
-    if (isTimed && room?.status === 'playing') setTimeLeft(TIMED_SECONDS);
+    if (isTimed && room?.status === 'playing') setTimeLeft(timedSeconds);
   }, [isTimed, room?.status]);
 
   useEffect(() => {
@@ -204,8 +209,8 @@ export default function RoomQuizScreen({ roomId, countries, go }) {
   const submitType = (e) => {
     e.preventDefault();
     if (phase !== 'answer' || !input.trim()) return;
-    const ok = checkAnswer(q.correct, input);
-    const lenient = !ok && checkAnswer(q.correct, input, { lenient: true });
+    const ok = checkAnswer(q.correct, input, strict ? { strict: true } : undefined);
+    const lenient = !ok && !strict && checkAnswer(q.correct, input, { lenient: true });
     if (ok || lenient) {
       correct(q);
     } else {

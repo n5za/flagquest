@@ -1,9 +1,12 @@
-export function normalize(s) {
-  return String(s ?? '')
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9 ]+/g, ' ')
+export function normalize(s, { strict = false } = {}) {
+  let out = String(s ?? '').toLowerCase();
+  if (!strict) {
+    out = out
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+  }
+  return out
+    .replace(/[^a-z0-9 àâäæçéèêëîïôœùûüÿñÀÂÄÆÇÉÈÊËÎÏÔŒÙÛÜŸÑ]/gi, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -28,18 +31,20 @@ export function levenshtein(a, b) {
   return prev[n];
 }
 
-export function closeEnough(input, target, { lenient = false } = {}) {
-  const t = normalize(target);
+export function closeEnough(input, target, { lenient = false, strict = false } = {}) {
+  const t = normalize(target, { strict });
   const limit = lenient
     ? t.length >= 10
       ? 3
       : t.length >= 6
         ? 2
         : 1
-    : t.length >= 12
-      ? 2
-      : t.length >= 6
-        ? 1
-        : 0;
-  return levenshtein(normalize(input), t) <= limit;
+    : strict
+      ? 0
+      : t.length >= 12
+        ? 2
+        : t.length >= 6
+          ? 1
+          : 0;
+  return levenshtein(normalize(input, { strict }), t) <= limit;
 }

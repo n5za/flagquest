@@ -11,11 +11,12 @@ const STATE_CHIP_KEYS = {
 
 export default function PathScreen({ countries, continentId, go }) {
   const { stateOf, continentMastery, settings, t } = useGame();
-  const continent = CONTINENT_MAP[continentId];
-  const list = countries.filter((c) => c.continent === continentId);
-  const mastery = continentMastery(continentId);
+  const continent = CONTINENT_MAP[continentId] || CONTINENT_MAP.Africa;
+  const safeId = continent.id;
+  const list = countries.filter((c) => c.continent === safeId);
+  const mastery = continentMastery(safeId);
   const masteredCount = list.filter((c) => stateOf(c.id) === 'mastered').length;
-  const scope = { type: 'continent', id: continentId };
+  const scope = { type: 'continent', id: safeId };
   const free = !settings.pathMode;
 
   return (

@@ -1899,6 +1899,94 @@ img {
   color: var(--mode-color, var(--blue));
 }
 
+.mode-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 10px 0 4px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1.5px dashed var(--border);
+  background: color-mix(in srgb, var(--surface-2) 60%, transparent);
+}
+
+.mode-setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 2px;
+}
+
+.mode-setting-row > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.mode-setting-label {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.mode-setting-hint {
+  font-size: 11.5px;
+  color: var(--dim);
+}
+
+.mode-setting-row input[type='checkbox'] {
+  width: 42px;
+  height: 24px;
+  appearance: none;
+  border-radius: 999px;
+  background: var(--border);
+  position: relative;
+  cursor: pointer;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+
+.mode-setting-row input[type='checkbox']::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  transition: left 0.15s;
+}
+
+.mode-setting-row input[type='checkbox']:checked {
+  background: var(--green, #58cc02);
+}
+
+.mode-setting-row input[type='checkbox']:checked::after {
+  left: 21px;
+}
+
+.mode-setting-range {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.mode-setting-range input[type='range'] {
+  width: 140px;
+  accent-color: var(--mode-color, var(--blue));
+}
+
+.mode-setting-value {
+  min-width: 42px;
+  text-align: right;
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--mode-color, var(--blue));
+}
+
 .room-invite {
   display: flex;
   align-items: center;

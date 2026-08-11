@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useGame } from '../state/GameContext.jsx';
 import Icon from './Icon.jsx';
-import { MODES } from '../data/modes.js';
+import ModeSettingsEditor from './ModeSettingsEditor.jsx';
+import { MODES, defaultRoomSettings } from '../data/modes.js';
 import {
   ROOM_COUNTS,
   ROOM_MODES,
@@ -29,6 +30,7 @@ export default function RoomScreen({ go, countries, joinCode, roomId }) {
   const [roomName, setRoomName] = useState('');
   const [count, setCount] = useState(10);
   const [mode, setMode] = useState('mc');
+  const [settings, setSettings] = useState(() => defaultRoomSettings('mc'));
   const [codeInput, setCodeInput] = useState('');
   const [busy, setBusy] = useState(false);
   const busyRef = useRef(false);
@@ -113,6 +115,7 @@ export default function RoomScreen({ go, countries, joinCode, roomId }) {
       name: roomName,
       questionCount: count,
       mode,
+      settings,
       countryIds: shuffle(countries).slice(0, count).map((c) => c.id),
     });
     busyRef.current = false;
@@ -203,12 +206,16 @@ export default function RoomScreen({ go, countries, joinCode, roomId }) {
                 aria-checked={mode === k}
                 className={`room-mode ${mode === k ? 'active' : ''}`}
                 style={{ ['--mode-color']: MODES[k].color }}
-                onClick={() => setMode(k)}
+                onClick={() => {
+                  setMode(k);
+                  setSettings(defaultRoomSettings(k));
+                }}
               >
                 <Icon name={MODES[k].icon} size={16} /> {t(MODES[k].title)}
               </button>
             ))}
           </div>
+          <ModeSettingsEditor mode={mode} settings={settings} onChange={setSettings} />
           <p className="dim small">{t("You'll be the admin — you pick the questions and start.")}</p>
           <button className="btn btn-primary" disabled={busy}>
             {busy ? t('Creating…') : <>{t('Create room')}</>}
