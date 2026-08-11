@@ -2,9 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useGame } from '../state/GameContext.jsx';
 import Icon from './Icon.jsx';
 import ModeSettingsEditor from './ModeSettingsEditor.jsx';
-import { MODES, defaultRoomSettings } from '../data/modes.js';
+import { MODES, QUIZ_LEN, MATCH_PAIRS, defaultRoomSettings } from '../data/modes.js';
 import {
-  ROOM_COUNTS,
   ROOM_MODES,
   createRoom,
   joinRoom,
@@ -14,6 +13,12 @@ import {
   startRoom,
   supabase,
 } from '../lib/supabase.js';
+
+function countForMode(mode) {
+  if (mode === 'match') return MATCH_PAIRS;
+  if (mode === 'timed') return 50; // timed uses as many as possible
+  return QUIZ_LEN;
+}
 
 function shuffle(a) {
   const arr = a.slice();
@@ -29,7 +34,6 @@ export default function RoomScreen({ go, countries, joinCode, roomId }) {
   const [room, setRoom] = useState(null);
   const [members, setMembers] = useState([]);
   const [roomName, setRoomName] = useState('');
-  const [count, setCount] = useState(10);
   const [mode, setMode] = useState('mc');
   const [settings, setSettings] = useState(() => defaultRoomSettings('mc'));
   const [codeInput, setCodeInput] = useState('');
@@ -112,12 +116,13 @@ export default function RoomScreen({ go, countries, joinCode, roomId }) {
     if (busyRef.current) return;
     busyRef.current = true;
     setBusy(true);
+    const autoCount = countForMode(mode);
     const res = await createRoom({
       name: roomName,
-      questionCount: count,
+      questionCount: autoCount,
       mode,
       settings,
-      countryIds: shuffle(countries).slice(0, count).map((c) => c.id),
+      countryIds: shuffle(countries).slice(0, autoCount).map((c) => c.id),
     });
     busyRef.current = false;
     setBusy(false);
@@ -193,20 +198,7 @@ export default function RoomScreen({ go, countries, joinCode, roomId }) {
             onChange={(e) => setRoomName(e.target.value)}
             aria-label={t('Room name')}
           />
-          <div className="room-counts" role="radiogroup" aria-label={t('Question count')}>
-            {ROOM_COUNTS.map((n) => (
-              <button
-                key={n}
-                type="button"
-                role="radio"
-                aria-checked={count === n}
-                className={`room-count ${count === n ? 'active' : ''}`}
-                onClick={() => setCount(n)}
-              >
-                {n}
-              </button>
-            ))}
-          </div>
+
           <p className="dim small">{t('Mode')}</p>
           <div className="room-modes" role="radiogroup" aria-label={t('Mode')}>
             {ROOM_MODES.map((k) => (
@@ -227,7 +219,14 @@ export default function RoomScreen({ go, countries, joinCode, roomId }) {
             ))}
           </div>
           <ModeSettingsEditor mode={mode} settings={settings} onChange={setSettings} />
-          <p className="dim small">{t("You'll be the admin — you pick the questions and start.")}</p>
+          <p className="dim small">
+            {mode === 'timed'
+              ? t("Timed Sprint — answer as many as you can in the time limit.")
+              : t('{n} {thing} will be picked automatically based on the mode.', {
+                  n: countForMode(mode),
+                  thing: mode === 'match' ? t('pairs') : t('questions'),
+                })}
+          </p>
           <button className="btn btn-primary" disabled={busy}>
             {busy ? t('Creating…') : <>{t('Create room')}</>}
           </button>
